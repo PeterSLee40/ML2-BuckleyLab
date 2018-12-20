@@ -1,0 +1,22 @@
+function [muspink] = getmuspink (wl,fname);
+
+if min(wl) < 650 | max(wl) > 910
+  fprintf (1,'ERROR: Wavelengths should be from 650 to 910 nm!\n');
+end
+
+% ink absorption spec from 650 to 910 nm
+load([ fname ])% loads 'Aink'
+
+wlink=Aink(:,1);
+
+for p =1:length(wl)
+    diff=wlink-wl(p);
+    ind = find(abs(diff)==min(abs(diff)));
+    if 
+    Ainknew(p)=Aink(ind,2);
+end
+
+muawater = muawater(wlused);
+ext = ext(:,wlused);
+eHbO = ext(1,:);
+eHb  = ext(2,:);

@@ -1,0 +1,80 @@
+%%%Codes from Turgut, modified by EB 2/24/10
+function Db=g1fit2layer(Db0,n0,muao,muspo,vo,lambda,thickness,sdsep,taus)
+
+usecutoff=0;
+savefigs=0;
+
+w=0;%CW
+
+%top layer, only useful for two layer case
+muabottom=muao;
+muspbottom=muspo;
+musptop=muspo;
+muatop=muao;
+%can work with a range
+Dbbottom=Db0(2);
+Dbtop=Db0(1);
+
+%source and detector
+sourceo=[0 0 zd].';
+detectoro=[sdsep 0 0].';
+r=sqrt((sourceo(1,:)-detectoro(1,:)).^2+(sourceo(2,:)-detectoro(2,:)).^2+(sourceo(3,:)-detectoro(3,:)).^2);
+
+%list of values from one of our correlators
+%taulist
+load taustouse;
+%in case we want to reduce the size of simulation
+taususe=taussave(1:tauslimit);
+
+fprintf(1,'Generating Data\n');
+for tindex2=1:length(taususe)
+    detectedsignal(tindex2)=twolayerdynamicjorgegeneric(1, muatop, musptop, muabottom, muspbottom,thickness,taussave(tindex2),Dbtop,Dbbottom(kk),n0,w,vo,lambda,sourceo,detectoro);
+end
+signals.g1(:,kk)=detectedsignal;
+
+%% Fit curves and plot
+op=optimset('fminsearch');
+options=optimset(op,'MaxIter',30000,'MaxFunEvals',30000,'TolFun',1.000e-16,'TolX',1.000e-16,'Display','Final');
+startcorr=1;% if you are fitting beta, want to use a higher number here (e.g. 9), if not fitting beta, use smallest number possible
+datalength=length(taussave); %chao's way of cutting data for decay.
+cutoff=0.5;
+
+taustmp=taussave(startcorr:datalength);
+for kk=1:length(Dbbottom)
+    if usecutoff
+        datalength=min(find(signals.g1(:,kk)./signals.g1(1,kk)<=cutoff));
+        taustmp=taussave(startcorr:datalength);
+    end
+    corrstmp=signals.g1(startcorr:datalength,kk)./signals.g1(1,kk);
+    [Dbfit(kk),fval,exitflag]=fminsearchbnd(@xg1fitx_new1,Dbbottom(kk),[0],[1e-2],options,...
+        r,taustmp,muspo,muao,k0,ze,corrstmp,length(taustmp));
+    Curvefit(:,kk)=g1fitx(Dbfit(kk),r,taussave,muspo,muao,k0,ze);
+            
+end
+figure,semilogx(taussave,signals.g1(:,1)./signals.g1(1,1),'b.-','LineWidth',3)
+hold on, semilogx(taussave,signals.g1(:,2)./signals.g1(1,2),'.-','Color',[0 0.5 0],'LineWidth',3)
+hold on, semilogx(taussave,signals.g1(:,3)./signals.g1(1,3),'r.-','LineWidth',3)
+semilogx(taussave,Curvefit(:,1),'b--','LineWidth',3)
+hold on, semilogx(taussave,Curvefit(:,2),'--','Color',[0 0.5 0],'LineWidth',3)
+hold on, semilogx(taussave,Curvefit(:,3),'r--','LineWidth',3)
+title(['r_{SD}=' num2str(r,'%6.1f') 'cm, d0=' num2str(thickness,'%6.1f') 'cm, D_{B0}=' num2str(Dbtop(1)) ])
+xlabel('\tau (s)')
+ylabel('g_{1}(\tau)')
+set(gcf,'PaperPositionMode','Auto')
+xlim([min(taussave) 1])
+legend({[ 'D_{B1}=' num2str(Dbbottom(1)) ],['D_{B1}=' num2str(Dbbottom(2)) ],['D_{B1}=' num2str(Dbbottom(3)) ]})
+text(5e-7,0.1,[ 'Fit D_{B1}=' num2str(Dbfit(1)) ],'Color','b')
+text(5e-7,0.25,['Fit D_{B1}=' num2str(Dbfit(2)) ],'Color',[0 0.5 0])
+text(5e-7,0.4,['Fit D_{B1}=' num2str(Dbfit(3)) ],'Color','r')
+ylim([0 1.1])
+set(findall(gcf,'-property','FontSize'),'FontSize',40)
+maxwindows(gcf)
+if savefigs
+    if usecutoff
+        saveas(gcf,['savedfigs/g1_r' num2str(r,'%6.1f') '_depth' num2str(thickness,'%6.1f') '_cutoff' num2str(cutoff,'%6.1f') '.fig'],'fig')
+        saveas(gcf,['savedfigs/g1_r' num2str(r,'%6.1f') '_depth' num2str(thickness,'%6.1f') '_cutoff' num2str(cutoff,'%6.1f') '.jpg'],'jpg')
+    else
+        saveas(gcf,['savedfigs/g1_r' num2str(r,'%6.1f') '_depth' num2str(thickness,'%6.1f') '.fig'],'fig')
+        saveas(gcf,['savedfigs/g1_r' num2str(r,'%6.1f') '_depth' num2str(thickness,'%6.1f') '.jpg'],'jpg')
+    end        
+end

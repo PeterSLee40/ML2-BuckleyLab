@@ -1,0 +1,22 @@
+function G1=twolayer_EB(mua,musp,DB,l,r,zb,z0,k0,D,v)
+
+for i=1:2
+    alpha(i)=sqrt((D(i)*s.^2+mua(i)+2*v*musp(i)*k0^2*DB(i))/D(i));
+end
+
+%Fourier domain solution to first layer
+G1_s=sinh(alpha(1)*(zb+z0))./D(1)/alpha(1)*...
+    (D(1)*alpha(1)*cosh(alpha(1)*l)+D(2)*alpha(2)*sinh(alpha(1)*l))./(D(1)*alpha(1)*cosh(alpha(1)*(l+zb))+D(2)*alpha(2)*sinh(alpha(1)*(l+zb)))-...
+    sinh(alpha(1)*z0)./D(1)/alpha(1);
+
+%Zeroth order Bessel function
+J0=sin(r*s)./(r*s);
+
+%Fourier integrand
+F = (@(s)G1_s.*s.*J0);
+
+G1=1/(2*pi).*quadgk(F,0,inf);
+
+
+
+
