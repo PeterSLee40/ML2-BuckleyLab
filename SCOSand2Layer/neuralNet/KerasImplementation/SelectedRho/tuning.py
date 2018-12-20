@@ -187,7 +187,7 @@ def evaluation(trained, regr, y_test, y_pred, x_test):
     '''
 
 
-def main(fileName, encoding="utf8", hyper=1):
+def main(fileName = ("nn8SDinttime10_inputtarget.csv"), encoding="utf8", hyper=1):
     fData, fTarget = readData("nn8SDinttime10_inputtarget.csv")
 
     if hyper:  # use hyperparameter tuning

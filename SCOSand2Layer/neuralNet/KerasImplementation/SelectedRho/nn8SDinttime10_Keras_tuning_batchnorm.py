@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Dec 20 18:04:51 2018
+
+@author: PeterLee
+"""
+
 
 #Author: Peter Lee, Plee40@gatech.edu
 import numpy as np
@@ -13,7 +20,7 @@ import sys
 import keras
 from math import exp
 from keras import Sequential, regularizers
-from keras.layers import Dense
+from keras.layers import Dense, BatchNormalization, Activation, Dropout
 import itertools
 from keras.callbacks import EarlyStopping,ReduceLROnPlateau, LearningRateScheduler
 from keras import optimizers
@@ -26,20 +33,23 @@ history = None
 def createNeuralNet(Xsize,Ysize, opt="Adam",loss='mean_squared_error',
     HLayers = (1), actFunc = 'relu'):
     model = Sequential()
-    model.add(Dense(Xsize, input_dim = Xsize,  activation=actFunc,
-                            kernel_regularizer=regularizers.l2(0.01),
-                            activity_regularizer=regularizers.l1(0.01)))
+    model.add(Dense(Xsize, input_dim = Xsize))
+    model.add(BatchNormalization())
+    model.add(Activation(actFunc))
+    #model.add(Dropout(0.5))
+
     if type(HLayers) == tuple:
         for curLayerSize in HLayers:
-            model.add(Dense(curLayerSize, activation=actFunc,
-                            kernel_regularizer=regularizers.l2(0.01),
-                            activity_regularizer=regularizers.l1(0.01)))
+            model.add(Dense(curLayerSize))
+            model.add(BatchNormalization())
+            model.add(Activation(actFunc))
+            #model.add(Dropout(0.5))
     else:
-        model.add(Dense(HLayers, activation=actFunc))
+        model.add(Dense(HLayers))
+        model.add(BatchNormalization())
+        model.add(Activation(actFunc))
+        #model.add(Dropout(0.5))
     model.add(Dense(Ysize))
-    #model.add(Dense(Ysize, '''activation='linear'''',
-    #                        kernel_regularizer=regularizers.l2(0.01),
-    #                        activity_regularizer=regularizers.l1(0.01)))
     model.compile(loss='mean_squared_error', optimizer = opt)
     return model
 
@@ -94,10 +104,10 @@ def GridSearchKeras(Dsize, Tsize, X, Y, params, max_iter=10):
         print("current params:"),print(*params, sep = ", ")  
         opt= eval("optimizers." + params[2] + "(lr = " + str(params[3]) + ")")
         reg = createNeuralNet(Dsize, Tsize, opt = opt, HLayers = params[0], actFunc = params[1])
-        earlyStop = EarlyStopping(monitor='val_loss', patience = 10, mode='auto')
-        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5,
-                              patience=3, min_lr=0.00001)
-        history = reg.fit(X, Y, batch_size=100, callbacks = [earlyStop], epochs = max_iter, validation_split = .1)
+        #earlyStop = EarlyStopping(monitor='val_loss', patience = 10, mode='auto')
+        reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
+                              patience=5, min_lr=0.00001)
+        history = reg.fit(X, Y, batch_size=100, callbacks = [reduce_lr], epochs = max_iter, validation_split = .2)
         error = reg.evaluate(X, Y)
         plotHistory(history)
         if error < minerror:
@@ -109,10 +119,10 @@ def GridSearchKeras(Dsize, Tsize, X, Y, params, max_iter=10):
 def modelling_HT(fData, fTarget):
     global minerror,bestParams,bestReg, history
     parameter_space = {
-        "hidden_layer_sizes": [(100,10)],
+        "hidden_layer_sizes": [(64, 8)],
         "activation": ["relu"],  # default is relu
         "solver": ["Adam"],  # default is adam
-        "alpha": [0.001]
+        "alpha": [0.01]
     }
     Datasize = fData.shape[1]
     if (type(fTarget) == list):
@@ -131,13 +141,12 @@ def modelling_HT(fData, fTarget):
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1,
                               patience=5, min_lr=0.00001)
     earlyStop = EarlyStopping(monitor='val_loss', patience = 10, mode='auto')
-    [reg, bestParams] = GridSearchKeras(Datasize, Targetsize, x_train, y_train, parameter_space, max_iter=2000)
-    history = reg.fit(x_train, y_train, batch_size=100, callbacks = [earlyStop, reduce_lr], epochs = 2000, validation_split = .1)
+    [bestReg, bestParams] = GridSearchKeras(Datasize, Targetsize, x_train, y_train, parameter_space, max_iter=200)
+    history = bestReg.fit(x_train, y_train, batch_size=100, callbacks = [earlyStop, reduce_lr], epochs = 200, validation_split = .1)
     # best parameter
     plotHistory(history)
     print("best parameters: ")
-    for params in bestParams:
-        print(*params, sep = ", ")  
+    print(*bestParams, sep = ", ")  
     # if you want to see the every grid you set above
     '''
     for mean, std, params in zip(reg.cv_results_['mean_test_score'], reg.cv_results_['std_test_score'],
@@ -145,11 +154,11 @@ def modelling_HT(fData, fTarget):
         print("%0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
         '''
     # prediction based on the best
-    y_pred = reg.predict(x_test)
+    y_pred = bestReg.predict(x_test)
     loss = mean_squared_error(y_test, y_pred)
     print(loss)
     print("complete")
-    return reg
+    return bestReg
 
 def plotHistory (history):
     plt.plot(history.history['loss'])
