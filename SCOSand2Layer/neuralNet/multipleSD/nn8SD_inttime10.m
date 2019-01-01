@@ -19,7 +19,7 @@ T = diff(DelayTime(1:1:81));
 repnumber = 0;
 %the optimal rho after running buildnnBFRrhoselecteff.m with inttime of 10.
 rho = [.5, 1.0, 1.0, 1.50, 1.50, 1.50, 2.0, 2.0];
-
+%rho = 
 Db1 = 7.00e-9:.1e-9:8.00e-9;
 %Ratio = 3:.1:10;
 Ratio = 2:.1:10;
@@ -86,7 +86,7 @@ net = train(net, inputshuffle', targetshuffledb2');
 
 %plotnnperf
 %this is to output the neural net.
-%csvwrite('nn8SDinttime10_input.csv', inputshuffle);
-%csvwrite('nn8SDinttime10_target.csv', targetshuffledb2);
+csvwrite('nn8SDinttime10_input.csv', inputshuffle);
+csvwrite('nn8SDinttime10_target.csv', targetshuffledb2);
 csvwrite('nn8SDinttime10_inputtarget.csv', inputtarget);
 
