@@ -10,7 +10,7 @@ addpath('..\..\multilayer');
 
 constants
 plotfits=1;%If you want to display how well your fit compares to your raw g2 data
-good_start = 5;
+good_start = 3;
 
 %Data directory
 fdir = './';
@@ -68,12 +68,12 @@ Db1s = estimatedDb1*.75:estimatedDb1*.01:estimatedDb1*.90;
 constants
 Ratio = 2:.1:10;
 ell = 0.90:.01:1.10;
-Betas = 10;
+Betas = 5;
 meanBeta = mean(betafit);
 %meanBeta(detectorNum)*(randn*.1+1)
 tau = taustmp;
 T = T(5:80);
-Rep = 5;
+Rep = 10;
 g2_25a = [];    numDetectors = 3;
 g1s = zeros(numDetectors, size(taustmp,2));
 g2s = g1s;  g2s_noise = g1s;
@@ -138,14 +138,14 @@ targetshuffledb1 = inputtarget(:, size(input,2) + 1);
 targetshuffledb2 = inputtarget(:, size(input,2) + 2);
 
 net = fitnet(5, 'trainscg');
-net = train(net, inputshuffle', targetshuffledb2');
+net = train(net, inputshuffle', targetshuffledb2','useGPU', 'yes');
 
-asfas = squeeze(mean(corrset(2:5,5:80,2:4)));
+asfas = squeeze(mean(corrset(2:5,5:80,1:3)));
 asfas = asfas';
 asfas = asfas(:);
 meanDb2Prediction1 = net(asfas);
 for i = 1:4
-    asfas = squeeze(corrset(i + 1,5:80,2:4));
+    asfas = squeeze(corrset(i + 1,5:80,1:3));
     asfas = asfas';
     asfas = asfas(:);
     db2Prediction(i) = net(asfas);

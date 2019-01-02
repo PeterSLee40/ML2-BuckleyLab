@@ -50,7 +50,7 @@ meanbeta=0.4;
 temp = 50:-2:30;
 %for temp_idx = 1:11;
 
-SD_dist = 10%mm
+SD_dist = 10; %mm
 detToUse = 2; %which detector is used for this SD seperation
 corr2fit = corrset(:,5:80,detToUse);
 taustmp = tau(5:80);
@@ -62,18 +62,18 @@ for i = 1:5
         betafit(i, j)=betaDbfit(i,2);
     end
 end
-estimatedDb1 = mean(Dbfit)
+estimatedDb1 = mean(Dbfit);
 
 Db1s = estimatedDb1*.75:estimatedDb1*.01:estimatedDb1*.90;
 constants
 Ratio = 2:.1:10;
 ell = 0.90:.01:1.10;
-Betas = 10;
+Betas = 5;
 meanBeta = mean(betafit);
 %meanBeta(detectorNum)*(randn*.1+1)
 tau = taustmp;
 T = T(5:80);
-Rep = 5;
+Rep = 10;
 g2_25a = [];    numDetectors = 3;
 g1s = zeros(numDetectors, size(taustmp,2));
 g2s = g1s;  g2s_noise = g1s;
@@ -138,7 +138,7 @@ targetshuffledb1 = inputtarget(:, size(input,2) + 1);
 targetshuffledb2 = inputtarget(:, size(input,2) + 2);
 
 net = fitnet(5, 'trainscg');
-net = train(net, inputshuffle', targetshuffledb2');
+net = train(net, inputshuffle', targetshuffledb2','useGPU', 'yes');
 
 asfas = squeeze(mean(corrset(2:5,5:80,2:4)));
 asfas = asfas';
