@@ -4,7 +4,7 @@
 %approx
 %then, we try to fit a neural net to the data.
 %finally, we're going to fit the data to the neural net
-load('discard5.mat')
+load('discard20.mat')
 addpath('..\..\functions');
 addpath('..\..\multilayer');
 
@@ -14,7 +14,7 @@ good_start = 5;
 
 %Data directory
 fdir = './';
-id = 'TwoLayer_discard5_';
+id = 'TwoLayer_discard20_';
 
 % SD distance
 SD_dist = 10;%mm
@@ -84,7 +84,7 @@ target = (zeros(siz,3));
 inputshuffle = input;   inputnn =  input;
 targetshuffle = target;
 load gauss_lag_5000.mat
-Rhos = [1.0, 1.5, 2.0];
+Rhos = [.5, 1.0, 1.5];
 inttime = 10;
 %top layer
 mua1=0.1287; mus1=6.7790;

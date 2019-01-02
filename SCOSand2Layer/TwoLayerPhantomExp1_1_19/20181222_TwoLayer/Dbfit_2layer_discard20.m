@@ -11,7 +11,7 @@ good_start = 2;
 %Data directory
 
 fdir = './';
-id = 'TwoLayer_discard5_';
+id = 'TwoLayer_discard20_';
 
 % SD distance
 SD_dist = 10;%mm 
