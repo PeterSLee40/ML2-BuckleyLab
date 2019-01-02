@@ -1,4 +1,4 @@
-addpath('F:\SCOSand2Layer\functions');
+
 first_delay=2e-7;
 for I=1:16,
     DelayTime(I) = I*first_delay;

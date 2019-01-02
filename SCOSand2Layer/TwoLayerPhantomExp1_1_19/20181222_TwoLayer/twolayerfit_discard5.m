@@ -5,8 +5,8 @@
 %then, we try to fit a neural net to the data.
 %finally, we're going to fit the data to the neural net
 load('discard5.mat')
-addpath('C:\Users\PeterLee\Documents\GitHub\SCOSand2Layer\functions');
-addpath('C:\Users\PeterLee\Documents\GitHub\SCOSand2Layer\multilayer');
+addpath('..\..\functions');
+addpath('..\..\multilayer');
 
 constants
 plotfits=1;%If you want to display how well your fit compares to your raw g2 data
@@ -103,8 +103,8 @@ for db1 = Db1s*1e-2
                 %db2 = db1*10^ratio;
                 curmua1 = mua1.*(randn*.025+1); curmus1 = mus1.*(randn*.025+1);
                 curmua2 = mua2.*(randn*.05+1);  curmus2 = mus2.*(randn*.05+1);
-                curmua1 = mua1; curmus1 = mus1;
-                curmua2 = mua2; curmus2 = mus2;
+                %curmua1 = mua1; curmus1 = mus1;
+                %curmua2 = mua2; curmus2 = mus2;
                 for i = 1:numDetectors
                     currRho = Rhos(i);
                     currInt = getIntensity(currRho,20);
