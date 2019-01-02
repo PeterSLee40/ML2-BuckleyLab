@@ -1,49 +1,42 @@
 close all
 clear all
-addpath('C:\Users\PeterLee\Documents\GitHub\BuckleyLab\SCOSand2Layer\functions');
 
 %ext='';
 %time=[1 2 3 4 5 6 7];% 12 13];
 %ratID = 'rat5';
-
 plotfits=1;%If you want to display how well your fit compares to your raw g2 data
 plotfigs=1;
 fixbeta=0;%doesnt work yet in this code, must = 0
 good_start = 2;
-
 %Data directory
-fdir = char(pwd + "/");
 
-id = '15';
-
+fdir = './';
+id = 'TwoLayer_discard20_';
 
 % SD distance
-SD_dist = 15;%mm 
-used_ch = 1;%Only looking at DCS data from detector 2
+SD_dist = 10;%mm 
+used_ch = 2;%Only looking at DCS data from detector 2
 
-mua = 0.1123;%cm-1
-musp = 7.4719;%cm-1
+mua = 0.1287;%cm-1
+musp = 6.7790;%cm-1
     
 %Define time points, tau, for g2 curves, FIXED TAU IN LABVIEW in Aug 2015!!!!  From sample.cpp code from jixiang to my gmail  on 3/18/15
 first_delay=2e-7;
 for I=1:16,
     DelayTime(I) = I*first_delay;
 end
-
 for J=1:30,
     for I=0:7,
         DelayTime(I+(J-1)*8+17) = DelayTime((J-1)*8+16+I)+first_delay*(2^J);
     end
 end
-
 DelayTime=DelayTime(1:256);
+
 %Determine bin width for each tau
 T=zeros(size(DelayTime));
 for indt=1:length(T)-1
     T(indt)=DelayTime(indt+1)-DelayTime(indt);
 end
-
-
 
 %PARAMETERS SPECIFIC TO THIS EXPERIMENT
 %Define integration time (sec)
@@ -69,22 +62,18 @@ n0=1.38;%index of refraction for tissue
 lambda=850*1e-6;%wavelength in mm
 k0=2*pi*n0/lambda; %this is the k0 for flow!
 R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
-
-
+%TwoLayer_discard5_1_flow_0
 meanbeta=0.4;
-
 temp = 50:-2:30;
-
 %for temp_idx = 1:11;
     
     for II = 1:5
-        
         maxfiles = 6;
-        
         %Load DCS data 
         for i=1:maxfiles
-            if exist([fdir 'noglycerol_' id '_' num2str(II) '_flow_' num2str(i-1) '.dat'])~=0
-                data=load([fdir 'noglycerol_' id '_' num2str(II) '_flow_' num2str(i-1) '.dat']);
+            currentFile = [fdir id num2str(II) '_flow_' num2str(i-1) '.dat']
+            if exist(currentFile)~=0
+                data=load(currentFile);
                 corrset_intensity(i,:)=data(1,2:9);
                 corrset(i,:,:)=data(2:end-1,2:9);%(file number x # taus x #dets)
             else
@@ -94,29 +83,23 @@ temp = 50:-2:30;
         end
         clear data
         
-        
         n_time_points = size( corrset,1);
         n_channels = size( corrset,2);
-        
         tau = DelayTime(good_start:end);
         
         %Change g2 data to be 4x5x256 instead of
         %11x256x4, (4 detectors, 5 frames of g2 data, 272 time points for
         %g2)
         corr = permute(corrset(1:maxfiles,:,1:8),[3 1 2]);
-        
-        
         %For each data frame, smooth, average good dets and
         %fit for g2
         
         for i=1:size(corr,2)
-            
             %End of g2 curve should fall to 1, if not, there is light
             %leakage or movement typically
             tail_avg=mean(corr(used_ch,i,115:125),3);
             
             if  tail_avg < 1.005 && tail_avg > 0.98 && corrset_intensity(i,used_ch) > cutoff_I
-                
                 signal(i,:)=squeeze(corr(used_ch,i,:));
                 %Smooth g2 to determine where to fit
                 signal_smooth=slidingavg(signal(i,good_start:end),avgnum);
@@ -219,8 +202,6 @@ temp = 50:-2:30;
         end 
         %close all
     end
-
-    
 figure, semilogx(DelayTime,signal(5,:),'k-','LineWidth',1);
 hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),'k--','LineWidth',2);
 axis([4e-7 1e-2 0.95 1.6]);

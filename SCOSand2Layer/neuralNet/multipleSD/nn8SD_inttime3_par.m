@@ -71,12 +71,12 @@ parfor db1 = Db1s
                 sigmas = g1s; 
                 currRho = rho(i);
                 currInt = getIntensity(currRho,20);
-                [g1s(i,:), gamma] = getG1(n,Reff,mua1,mus1,db1,tau,lambda,currRho,w,l,mua2,mus2,db2,gl);
+                [g1s(i,:), gamma(i)] = getG1(n,Reff,mua1,mus1,db1,tau,lambda,currRho,w,l,mua2,mus2,db2,gl);
             end
             for rep = 1:Rep
                 for beta = Beta
                     for u = 1:numDetectors
-                        sigmas(u,:) = getDCSNoise(currInt,T,inttime,beta,gamma,tau);
+                        sigmas(u,:) = getDCSNoise(currInt,T,inttime,beta,gamma(u),tau);
                     end
                     betaindex = find(Beta==beta);
                     j = j + 1;
