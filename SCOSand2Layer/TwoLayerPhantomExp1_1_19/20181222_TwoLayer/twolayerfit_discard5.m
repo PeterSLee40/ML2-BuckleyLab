@@ -73,7 +73,7 @@ meanBeta = mean(betafit);
 %meanBeta(detectorNum)*(randn*.1+1)
 tau = taustmp;
 T = T(5:80);
-Rep = 10;
+Rep = 5;
 g2_25a = [];    numDetectors = 3;
 g1s = zeros(numDetectors, size(taustmp,2));
 g2s = g1s;  g2s_noise = g1s;
@@ -102,10 +102,10 @@ for db1 = Db1s*1e-2
             for rep = 1:Rep
                 db2 = db1*ratio;
                 %db2 = db1*10^ratio;
-                %curmua1 = mua1.*(randn*.025+1); curmus1 = mus1.*(randn*.025+1);
-                %curmua2 = mua2.*(randn*.05+1);  curmus2 = mus2.*(randn*.05+1);
-                curmua1 = mua1; curmus1 = mus1;
-                curmua2 = mua2; curmus2 = mus2;
+                curmua1 = mua1.*(randn*.02+1); curmus1 = mus1.*(randn*.02+1);
+                curmua2 = mua2.*(randn*.03+1);  curmus2 = mus2.*(randn*.03+1);
+                %curmua1 = mua1; curmus1 = mus1;
+                %curmua2 = mua2; curmus2 = mus2;
                 for i = 1:numDetectors
                     currRho = Rhos(i);
                     currInt = getIntensity(currRho,20);
@@ -113,7 +113,7 @@ for db1 = Db1s*1e-2
                 end
                 
                 for beta = 1:Betas,    j = j + 1;
-                    betaRand = meanBeta.*(randn(1)*.1+1);
+                    betaRand = meanBeta.*(randn(1)*.05+1);
                     for u = 1:numDetectors
                         sigmas(u,:) = getDCSNoise(currInt,T,inttime,betaRand(u),gamma(u),tau);
                     end
@@ -138,7 +138,7 @@ targetshuffledb1 = inputtarget(:, size(input,2) + 1);
 targetshuffledb2 = inputtarget(:, size(input,2) + 2);
 
 net = fitnet(5, 'trainscg');
-net = train(net, inputshuffle', targetshuffledb2','useGPU', 'yes');
+net = train(net, inputshuffle', targetshuffledb2');
 
 asfas = squeeze(mean(corrset(2:5,5:80,2:4)));
 asfas = asfas';

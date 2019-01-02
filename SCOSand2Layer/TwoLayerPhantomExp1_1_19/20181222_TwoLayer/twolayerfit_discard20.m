@@ -10,7 +10,7 @@ addpath('..\..\multilayer');
 
 constants
 plotfits=1;%If you want to display how well your fit compares to your raw g2 data
-good_start = 3;
+good_start = 5;
 
 %Data directory
 fdir = './';
@@ -56,7 +56,7 @@ corr2fit = corrset(:,5:80,detToUse);
 taustmp = tau(5:80);
 for i = 1:5
     for j = 1:3
-        corr2fit = corrset(i,5:80,j + 1);
+        corr2fit = corrset(i,5:80,j);
         betaDbfit(i, :) = fminsearchbnd(@(x) dcs_g2_Db_GT(x,taustmp,corr2fit,SD_dist,mua,musp,1.0,k0,R),guess,lb,ub);
         Dbfit(i, j)=betaDbfit(i,1);
         betafit(i, j)=betaDbfit(i,2);
@@ -73,7 +73,7 @@ meanBeta = mean(betafit);
 %meanBeta(detectorNum)*(randn*.1+1)
 tau = taustmp;
 T = T(5:80);
-Rep = 10;
+Rep = 5;
 g2_25a = [];    numDetectors = 3;
 g1s = zeros(numDetectors, size(taustmp,2));
 g2s = g1s;  g2s_noise = g1s;
@@ -102,10 +102,10 @@ for db1 = Db1s*1e-2
             for rep = 1:Rep
                 db2 = db1*ratio;
                 %db2 = db1*10^ratio;
-                %curmua1 = mua1.*(randn*.025+1); curmus1 = mus1.*(randn*.025+1);
-                %curmua2 = mua2.*(randn*.05+1);  curmus2 = mus2.*(randn*.05+1);
-                curmua1 = mua1; curmus1 = mus1;
-                curmua2 = mua2; curmus2 = mus2;
+                curmua1 = mua1.*(randn*.02+1); curmus1 = mus1.*(randn*.02+1);
+                curmua2 = mua2.*(randn*.03+1);  curmus2 = mus2.*(randn*.03+1);
+                %curmua1 = mua1; curmus1 = mus1;
+                %curmua2 = mua2; curmus2 = mus2;
                 for i = 1:numDetectors
                     currRho = Rhos(i);
                     currInt = getIntensity(currRho,20);
