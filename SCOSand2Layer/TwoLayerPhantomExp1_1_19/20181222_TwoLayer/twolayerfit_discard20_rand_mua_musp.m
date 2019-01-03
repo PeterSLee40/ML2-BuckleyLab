@@ -30,9 +30,9 @@ t=1;
 mua = mua/10;
 musp = musp/10;
 %Initial guess for our g2 fit, [Db beta]
-guess = [1e-7 0.5];
+guess = [1e-7 0.49];
 %Upper and lower bounds for fit [Db beta]
-lb=[1e-11 0.3];     ub=[1e-3 0.55];
+lb=[1e-11 0.35];     ub=[1e-3 0.55];
 %Only fit g2 values above cutoff:
 cutoff=1.05;  %default = 1.05
 datalength=70;
@@ -54,10 +54,12 @@ SD_dist = 10%mm
 detToUse = 2; %which detector is used for this SD seperation
 corr2fit = corrset(:,5:80,detToUse);
 taustmp = tau(5:80);
-for i = 1:5
+Rho = [.5 1.0 1.5];
+for i = 1:4
     for j = 1:3
-        corr2fit = corrset(i,5:80,j);
-        betaDbfit(i, :) = fminsearchbnd(@(x) dcs_g2_Db_GT(x,taustmp,corr2fit,SD_dist,mua,musp,1.0,k0,R),guess,lb,ub);
+        currentSD = Rho(j);
+        corr2fit1 = corrset(i + 1,5:80,j);
+        betaDbfit(i, :) = fminsearchbnd(@(x) dcs_g2_Db_GT(x,taustmp,corr2fit1,currentSD*10,mua1/10,mus1/10,1.0,k0,R),guess,lb,ub);
         Dbfit(i, j)=betaDbfit(i,1);
         betafit(i, j)=betaDbfit(i,2);
     end
@@ -109,7 +111,7 @@ for db1 = Db1s*1e-2
                 for i = 1:numDetectors
                     currRho = Rhos(i);
                     currInt = getIntensity(currRho,20);
-                    [g1s(i,:), gamma(i)] = getG1(n0,Reff,curmua1,curmus1,db1,tau,lambda,currRho,w,l,curmua2,curmus2,db2,gl);
+                    [g1s(i,:), gamma(i)] = getG1(n,Reff,curmua1,curmus1,db1,tau,lambda,currRho,w,l,curmua2,curmus2,db2,gl);
                 end
                 
                 for beta = 1:Betas,    j = j + 1;
@@ -138,7 +140,7 @@ targetshuffledb1 = inputtarget(:, size(input,2) + 1);
 targetshuffledb2 = inputtarget(:, size(input,2) + 2);
 
 net = fitnet(5, 'trainscg');
-net = train(net, inputshuffle', targetshuffledb2','useGPU', 'no');
+net = train(net, inputshuffle', targetshuffledb2');
 
 asfas = squeeze(mean(corrset(2:5,5:80,1:3)));
 asfas = asfas';

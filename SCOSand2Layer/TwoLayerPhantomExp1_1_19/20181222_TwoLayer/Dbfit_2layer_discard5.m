@@ -14,8 +14,8 @@ fdir = './';
 id = 'TwoLayer_discard5_';
 
 % SD distance
-SD_dist = 10;%mm 
-used_ch = 2;%Only looking at DCS data from detector 2
+SD_dist = 20;%mm 
+used_ch = 4;%Only looking at DCS data from detector 2
 
 mua = 0.1287;%cm-1
 musp = 6.7790;%cm-1
@@ -51,12 +51,12 @@ guess = [1e-7 0.5];
 lb=[1e-10 0.3];
 ub=[1e-3 0.55];
 %Only fit g2 values above cutoff:
-cutoff=1.05;  %default = 1.05
-datalength=70;
+cutoff=1.01;  %default = 1.05
+datalength=80;
 %How many points to average in each curve for
 %smoothing
 avgnum=10;
-cutoff_I=30;%kHz
+cutoff_I=10;%kHz
 cutoffCOV=20;%require COV to be less than cutoff
 n0=1.38;%index of refraction for tissue
 lambda=850*1e-6;%wavelength in mm
@@ -71,7 +71,7 @@ temp = 50:-2:30;
         maxfiles = 6;
         %Load DCS data 
         for i=1:maxfiles
-            currentFile = [fdir id num2str(II) '_flow_' num2str(i-1) '.dat']
+            currentFile = [fdir id num2str(II) '_flow_' num2str(i-1) '.dat'];
             if exist(currentFile)~=0
                 data=load(currentFile);
                 corrset_intensity(i,:)=data(1,2:9);
@@ -106,7 +106,7 @@ temp = 50:-2:30;
                 %Find where smoothed g2 > cutoff (defined above)
                 foo = min(find(signal_smooth <= cutoff))+good_start;
                 if isempty(foo) || foo < good_start
-                    foo=70;%Fit first 70 points
+                    foo=90;%Fit first 80 points
                 end
                 %Fit non-smoothed g2 using cutoff
                 foo;
@@ -128,7 +128,7 @@ temp = 50:-2:30;
                 end
                 %Get fit g2 to test fit
                 %Curvefitg2avg(II,d,:)=dcs_g2fit_GT([DbFit(II,d) beta(II,d)],taus,SD_dist(d),mua,musp,k0,1);
-                Curvefitg2avg(i,:)=dcs_g2fit_GT([Dbfit(i) beta(i)],DelayTime,SD_dist,mua,musp,k0,R,1);
+                Curvefitg2avg(i,:)=dcs_g2fit_GT([Dbfit(i)*1 beta(i)],DelayTime,SD_dist,mua,musp,k0,R,1);
             else
                 beta(i)=NaN;
                 Dbfit(i)=NaN;
@@ -207,3 +207,4 @@ hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),'k--','LineWidth',2);
 axis([4e-7 1e-2 0.95 1.6]);
 %end     
 %save repfit_38c15mm_cut1.005.mat DelayTime signal Curvefitg2avg
+nanMeanDb1 = nanmean(Dbfit)
