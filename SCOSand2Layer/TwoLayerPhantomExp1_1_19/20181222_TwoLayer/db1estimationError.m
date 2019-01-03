@@ -1,3 +1,6 @@
+addpath("../../multilayer");
+addpath("../../functions");
+
 constants
 
 Db1 = .2e-8;
@@ -5,13 +8,7 @@ Db2 = Db1*10;
 ell = 1
 dbbeta = zeros(length(ell),2);
 
-n = 1.37;
-Reff = .493;
 w = 0;
-
-mua1=0.1287; mus1=6.7790;
-%bottom layer
-mua2= 0.1391; mus2= 6.3814;
 Rep = 1;
 dbbetasum = zeros(size(Rep,2),1);
 
@@ -19,12 +16,14 @@ T = T(1:1:100);
 tau = DelayTime(2:1:101);
 Beta = .5;
 
-guess = [1e-7 0.5];
-lb=[1e-11 0.4];
-ub=[1e-2 .55];
+guess = [1e-8 0.5];
+lb=[1e-10 0.4];
+ub=[1e-4 .55];
 
-lambda=852*1e-6;%mm
+lambda=850*1e-6;%mm
+n = 1.37;
 k0=2*pi*n/lambda;
+Reff = .493;
 n0=n;
 R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
 beta = zeros;
@@ -40,7 +39,10 @@ cutoff = 1.05;
 good_start = 5;
 i = 0;
 load gauss_lag_5000.mat
-
+%top layer optical properties
+mua1=0.1287; mus1=6.7790;
+%bottom layer
+mua2= 0.1391; mus2= 6.3814;
 Ratio = 2:.2:10;
 Ell = .9:.02:1.1;
 Rho = [.5:.1:2.5];
@@ -58,29 +60,33 @@ for ratio = Ratio
             curmua1 = mua1; curmus1 = mus1;
             curmua2 = mua2; curmus2 = mus2;
             currInt = getIntensity(rho,20);
-            [g1s, gamma] = getG1(n,Reff,curmua1,curmus1,db1,tau,lambda,rho,w,l,curmua2,curmus2,db2,gl);
-            for beta = Beta,    j = j + 1;
+            [g1s, gamma] = getG1(n,R,curmua1,curmus1,db1,tau,lambda,rho,w,l,curmua2,curmus2,db2,gl);
+            for beta = Beta
                 betaRand = beta.*(randn(1)*.01+1);
                 sigmas = getDCSNoise(currInt,T,inttime,betaRand,gamma,tau);
                 noises = sigmas.*randn(1, size(tau,2));
                 g2s = betaRand.*g1s.^2 + 1;
                 g2s_noise = noises + g2s;
+                g2 = g2s_noise;
+                foo = min(find(g2 <= cutoff))+ good_start -1;
+                if isempty(foo) || foo < good_start, foo=70;, end%Fit first 70 points
+                %Fit non-smoothed g2 using cutoff obtained from smoothed g2
+                %foo
+                g2 = g2(1:foo);
+                tau1 = tau(1:foo);
+                dbbeta = fminsearchbnd(@(x) dcs_g2_Db_GT_PL(x,tau1,g2,rho*10,mua1/10,mus1/10,1,k0,R),guess,lb,ub);
+                %dbbeta = fminsearchbnd(@(x) dcs_g2_Db_GT(x,tau1,g2,rho*10,mua1/10,mus1/10,1,k0,R),guess,lb,ub);
+                
+                j = j + 1;
+                Dbfit = dbbeta(1);
+                params(j,:) = [ratio, ell, beta];
+                percentagediff(j,:) = [rho, ((Dbfit*1e-2 - db1)./db1*100)];            
             end
-            g2 = g2s_noise;
-            foo = min(find(g2 <= cutoff))+ good_start -1;
-            if isempty(foo) || foo < good_start, foo=70;, end%Fit first 70 points
-            %Fit non-smoothed g2 using cutoff obtained from smoothed g2
-            %foo
-            g2 = g2(1:foo);
-            tau1 = tau(1:foo);
-            dbbeta(i,:) = fminsearchbnd(@(x) dcs_g2_Db_GT(x,tau1,g2,rho*10,mua1/10,mus1/10,1,k0,R),guess,lb,ub);
         end
-        i = 0;
-        Dbfit = dbbeta(:,1);
-        percentagediff = (Dbfit*1e-2 - db1)./db1*100;
-        xlabel('Source-Detector separation in cm');
-        ylabel('Db1 estimation error percentage');
-        plot(Rho, percentagediff'); hold on;
+        
     end
 end
+xlabel('Source-Detector separation in cm');
+ylabel('Db1 estimation error percentage');
+plot(percentagediff);
 
