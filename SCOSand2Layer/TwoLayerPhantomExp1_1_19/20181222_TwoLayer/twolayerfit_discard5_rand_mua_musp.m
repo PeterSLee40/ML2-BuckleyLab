@@ -72,9 +72,9 @@ Ratio = 2:.1:10;
 ell = 0.90:.01:1.10;
 
 %how many times to sample from Beta
-Betas = 50;
+Betas = 1;
 %how many times to sample mua and musp (this will slow down your process)
-Rep = 1;
+Rep = 20;
 
 
 meanBeta = mean(betafit);
@@ -90,7 +90,7 @@ inputshuffle = input;   %inputnn =  input;
 targetshuffle = target;
 load gauss_lag_5000.mat
 Rhos = [1.0, 1.5, 2.0];
-inttime = 10;
+inttime = 5;
 %top layer
 mua1=0.1287; mus1=6.7790;
 %bottom layer
@@ -109,16 +109,16 @@ for db1 = Db1s*1e-2
             for rep = 1:Rep
                 db2 = db1*ratio;
                 %db2 = db1*10^ratio;
-                %curmua1 = mua1.*(randn*.02+1); curmus1 = mus1.*(randn*.02+1);
-                %curmua2 = mua2.*(randn*.03+1);  curmus2 = mus2.*(randn*.03+1);
-                curmua1 = mua1; curmus1 = mus1;
-                curmua2 = mua2; curmus2 = mus2;
+                curmua1 = mua1.*(randn*.01+1); curmus1 = mus1.*(randn*.01+1);
+                curmua2 = mua2.*(randn*.02+1);  curmus2 = mus2.*(randn*.02+1);
+                %curmua1 = mua1; curmus1 = mus1;
+                %curmua2 = mua2; curmus2 = mus2;
                 %tau = DelayTime(1:120);
                 [g1s, gamma] = getG1(n,Reff,curmua1,curmus1,db1,tau,lambda,Rhos',w,l,curmua2,curmus2,db2,gl);
                 g1s = squeeze(g1s)';
                 for beta = 1:Betas,    j = j + 1;
                     betaRand = meanBeta.*(randn(1)*.05+1);
-                    intensities = getIntensity(Rhos,5);
+                    intensities = [400 ,80, 12].*1e3;
                     sigmas = getDCSNoise(intensities,T,inttime,betaRand,gamma,tau);
                     noises = sigmas.*randn(numDetectors, size(tau,2));
                     %betasRand = repmat(betaRand',1,size(tau,2));
@@ -136,16 +136,16 @@ end
 
 inputtarget = ([input target]);
 inputtarget = (inputtarget(randperm(size(inputtarget,1)),:));
-inputshuffle = single(inputtarget(:, 1:size(inputtarget,2)-3));
+inputshuffle = (inputtarget(:, 1:size(inputtarget,2)-3));
 targetshuffledb1 = inputtarget(:, size(input,2) + 1);
-targetshuffledb2 = single(inputtarget(:, size(input,2) + 2));
+targetshuffledb2 = (inputtarget(:, size(input,2) + 2));
 targetshuffleell = inputtarget(:, size(input,2) + 3);
-
+Nets = [];
 for retrainingIteration = 1:10
     disp(['retrainingIteration: ',num2str(retrainingIteration)])
-    net = fitnet(5, 'trainscg');
-    net = train(net, inputshuffle', targetshuffledb2', 'useGPU', 'no');
-    Nets(retrainingIteration) = net;
+    net = fitnet(3, 'trainscg');
+    net = train(net, inputshuffle', targetshuffledb2', 'useGPU', 'yes');
+    Nets= [Nets net];
     asfas = squeeze(mean(corrset(2:5,taurange,2:4)));
     asfas = asfas';
     asfas = asfas(:);
