@@ -146,9 +146,9 @@ netArch = {[5, 3],[10, 5], 100, 5, 3, 1};
 for retrainingIteration = 1:6
     net = fitnet(netArch{retrainingIteration}, 'trainscg');
     %net.layers{1}.transferFcn ='poslin';
-    [net1, tr] = train(net, inputshuffle', targetshuffledb2', 'useGPU', 'yes');
-    testTarget = targetshuffle(tr.testInd);
-    testFit = net1(inputshuffle(tr.testInd,:)', 'useGPU', 'yes');
-    performance = mse(testTarget, testFit)
+    [net1, tr] = train(net, inputshuffle', targetshuffledb2', 'useGPU', 'no');
+    testTarget = targetshuffledb2(tr.testInd);
+    testFit = net1(inputshuffle(tr.testInd,:)', 'useGPU', 'no');
+    performance = mse(testTarget, testFit')
     Nets = [Nets performance];
 end
