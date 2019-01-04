@@ -210,5 +210,5 @@ hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),'k--','LineWidth',2);
 axis([4e-7 1e-2 0.95 1.6]);
 %end     
 %save repfit_38c15mm_cut1.005.mat DelayTime signal Curvefitg2avg
-nanMeanDb1 = nanmean(Dbfit)
+nanMeanDb1 = nanmean(Dbfit);
 end

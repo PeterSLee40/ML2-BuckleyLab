@@ -104,10 +104,10 @@ for db1 = Db1s*1e-2
             for rep = 1:Rep
                 db2 = db1*ratio;
                 %db2 = db1*10^ratio;
-                curmua1 = mua1.*(randn*.02+1); curmus1 = mus1.*(randn*.02+1);
-                curmua2 = mua2.*(randn*.03+1);  curmus2 = mus2.*(randn*.03+1);
-                %curmua1 = mua1; curmus1 = mus1;
-                %curmua2 = mua2; curmus2 = mus2;
+                %curmua1 = mua1.*(randn*.02+1); curmus1 = mus1.*(randn*.02+1);
+                %curmua2 = mua2.*(randn*.03+1);  curmus2 = mus2.*(randn*.03+1);
+                curmua1 = mua1; curmus1 = mus1;
+                curmua2 = mua2; curmus2 = mus2;
                 for i = 1:numDetectors
                     currRho = Rhos(i);
                     currInt = getIntensity(currRho,20);
