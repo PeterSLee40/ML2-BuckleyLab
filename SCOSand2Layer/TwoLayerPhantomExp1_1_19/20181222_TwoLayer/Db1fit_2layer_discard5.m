@@ -1,6 +1,9 @@
 close all
 clear all
 
+addpath('..\..\functions');
+addpath('..\..\multilayer');
+
 %ext='';
 %time=[1 2 3 4 5 6 7];% 12 13];
 %ratID = 'rat5';
@@ -196,11 +199,12 @@ temp = 50:-2:30;
         beta_fit(II) = nanmean(beta);
         stdev_fit(II) = nanstd(Dbfit);
         stdev_beta_fit(II) = nanstd(Dbfit);
-        
+        Allcorrset(II,:,:,:) = corrset;
         if II < 3 
         clear beta Dbfit Curvefitg2avg signal_alldets signal corr2fit sigma corrset corrset_intensity corrset_times
         end 
         %close all
+        
     end
 figure, semilogx(DelayTime,signal(5,:),'k-','LineWidth',1);
 hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),'k--','LineWidth',2);

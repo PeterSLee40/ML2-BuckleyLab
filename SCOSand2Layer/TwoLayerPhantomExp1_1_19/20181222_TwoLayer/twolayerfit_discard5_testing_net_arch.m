@@ -72,7 +72,7 @@ Ratio = 2:.1:10;
 ell = 0.90:.01:1.10;
 
 %how many times to sample from Beta
-Betas = 20;
+Betas = 10;
 %how many times to sample mua and musp (this will slow down your process)
 Rep = 1;
 
@@ -109,12 +109,12 @@ for db1 = Db1s*1e-2
             for rep = 1:Rep
                 db2 = db1*ratio;
                 %db2 = db1*10^ratio;
-                %curmua1 = mua1.*(randn*.02+1); curmus1 = mus1.*(randn*.02+1);
-                %curmua2 = mua2.*(randn*.03+1);  curmus2 = mus2.*(randn*.03+1);
-                curmua1 = mua1; curmus1 = mus1;
-                curmua2 = mua2; curmus2 = mus2;
+                curmua1 = mua1.*(randn*.01+1); curmus1 = mus1.*(randn*.01+1);
+                curmua2 = mua2.*(randn*.02+1);  curmus2 = mus2.*(randn*.02+1);
+                %curmua1 = mua1; curmus1 = mus1;
+                %curmua2 = mua2; curmus2 = mus2;
                 %tau = DelayTime(1:120);
-                [g1s, gamma] = getG1(n,Reff,curmua1,curmus1,db1,tau,lambda,Rhos',w,l,curmua2,curmus2,db2,gl);
+                [g1s, gamma] = getG1(n0,Reff,curmua1,curmus1,db1,tau,lambda,Rhos',w,l,curmua2,curmus2,db2,gl);
                 g1s = squeeze(g1s)';
                 for beta = 1:Betas,    j = j + 1;
                     betaRand = meanBeta.*(randn(1)*.05+1);
@@ -140,25 +140,15 @@ inputshuffle = (inputtarget(:, 1:size(inputtarget,2)-3));
 targetshuffledb1 = inputtarget(:, size(input,2) + 1);
 targetshuffledb2 = (inputtarget(:, size(input,2) + 2));
 targetshuffleell = inputtarget(:, size(input,2) + 3);
+Nets = [];
+netArch = {[5, 3],[10, 5], 100, 5, 3, 1};
 
-for retrainingIteration = 1:10
-    disp(['retrainingIteration: ',num2str(retrainingIteration)])
-    net = fitnet(5, 'trainscg');
-    net = train(net, inputshuffle', targetshuffledb2', 'useGPU', 'yes');
-    Nets= [Nets net];
-    asfas = squeeze(mean(corrset(2:5,taurange,2:4)));
-    asfas = asfas';
-    asfas = asfas(:);
-    currentPrediction1 = net(asfas);
-    disp(['mean g2 Prediction: ',num2str(currentPrediction1)])
-    meanDb2Prediction1(retrainingIteration) = currentPrediction1;
-    for i = 1:4
-        asfas = squeeze(corrset(i + 1,taurange,2:4));
-        asfas = asfas';
-        asfas = asfas(:);
-        db2Prediction(i) = net(asfas);
-    end
-    currentPrediction2 = mean(db2Prediction);
-    disp(['mean of g2 Predictions: ',num2str(currentPrediction2)]);
-    meanDb2Prediction2(retrainingIteration) = currentPrediction2;
+for retrainingIteration = 1:6
+    net = fitnet(netArch{retrainingIteration}, 'trainscg');
+    %net.layers{1}.transferFcn ='poslin';
+    [net1, tr] = train(net, inputshuffle', targetshuffledb2', 'useGPU', 'yes');
+    testTarget = targetshuffle(tr.testInd);
+    testFit = net1(inputshuffle(tr.testInd,:)', 'useGPU', 'yes');
+    performance = mse(testTarget, testFit)
+    Nets = [Nets performance];
 end

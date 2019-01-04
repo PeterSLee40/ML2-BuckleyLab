@@ -114,7 +114,7 @@ for db1 = Db1s*1e-2
                 %curmua1 = mua1; curmus1 = mus1;
                 %curmua2 = mua2; curmus2 = mus2;
                 %tau = DelayTime(1:120);
-                [g1s, gamma] = getG1(n,Reff,curmua1,curmus1,db1,tau,lambda,Rhos',w,l,curmua2,curmus2,db2,gl);
+                [g1s, gamma] = getG1(n0,Reff,curmua1,curmus1,db1,tau,lambda,Rhos',w,l,curmua2,curmus2,db2,gl);
                 g1s = squeeze(g1s)';
                 for beta = 1:Betas,    j = j + 1;
                     betaRand = meanBeta.*(randn(1)*.05+1);
@@ -143,8 +143,8 @@ targetshuffleell = inputtarget(:, size(input,2) + 3);
 Nets = [];
 for retrainingIteration = 1:10
     disp(['retrainingIteration: ',num2str(retrainingIteration)])
-    net = fitnet(3, 'trainscg');
-    net = train(net, inputshuffle', targetshuffledb2', 'useGPU', 'yes');
+    net = fitnet([5 3], 'trainscg');
+    net = train(net, inputshuffle', targetshuffledb2', 'useGPU', 'no');
     Nets= [Nets net];
     asfas = squeeze(mean(corrset(2:5,taurange,2:4)));
     asfas = asfas';
