@@ -7,7 +7,7 @@
 load('discard5.mat')
 addpath('..\..\functions');
 addpath('..\..\multilayer');
-
+close all;
 taurange = 5:75;
 
 constants
@@ -137,13 +137,13 @@ Nets = [];
 [trainInd,valInd,testInd] = dividerand(size(inputshuffle, 1));
 for retrainingIteration = 1:5
     net = fitnet([5,3], 'trainscg');
-    net.trainParam.max_fail = 50;
+    net.trainParam.max_fail = 10;
     net.divideFcn = 'divideind';
     net.divideParam.trainInd = trainInd;
     net.divideParam.valInd = valInd;
     net.divideParam.testInd = testInd;
     net.initFcn = 'initlay';
-    net.layers{i}.initFcn = 'initwb'
+    net.layers{i}.initFcn = 'initwb';
     [net1, tr] = train(net, inputshuffle', targetshuffledb2','reduction',1);
     
     testTarget = targetshuffledb2(tr.testInd);
