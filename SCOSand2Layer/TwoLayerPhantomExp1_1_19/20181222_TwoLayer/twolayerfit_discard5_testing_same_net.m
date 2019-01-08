@@ -137,13 +137,14 @@ Nets = [];
 [trainInd,valInd,testInd] = dividerand(size(inputshuffle, 1));
 for retrainingIteration = 1:5
     net = fitnet([5,3], 'trainscg');
-    net.trainParam.max_fail = 10;
+    net.trainParam.max_fail = 5000;
     net.divideFcn = 'divideind';
     net.divideParam.trainInd = trainInd;
     net.divideParam.valInd = valInd;
     net.divideParam.testInd = testInd;
     net.initFcn = 'initlay';
     net.layers{i}.initFcn = 'initwb';
+    net.trainParam.epochs=10000;
     [net1, tr] = train(net, inputshuffle', targetshuffledb2','reduction',1);
     
     testTarget = targetshuffledb2(tr.testInd);
