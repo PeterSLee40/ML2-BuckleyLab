@@ -134,23 +134,26 @@ targetshuffledb1 = inputtarget(:, size(input,2) + 1);
 targetshuffledb2 = (inputtarget(:, size(input,2) + 2));
 targetshuffleell = inputtarget(:, size(input,2) + 3);
 Nets = [];
-netArch = {[100, 10], [36,6],[10,5], [5,3], 213, 100, 5, 3, 1};
 [trainInd,valInd,testInd] = dividerand(size(inputshuffle, 1));
-for retrainingIteration = 1:size(netArch,2)
-    net = fitnet(netArch{retrainingIteration}, 'trainscg');
+for retrainingIteration = 1:5
+    net = fitnet([5,3], 'trainscg');
+    net.trainParam.max_fail = 50;
     net.divideFcn = 'divideind';
     net.divideParam.trainInd = trainInd;
     net.divideParam.valInd = valInd;
     net.divideParam.testInd = testInd;
-    net.trainParam.max_fail = 50;
+    net.initFcn = 'initlay';
+    net.layers{i}.initFcn = 'initwb'
     [net1, tr] = train(net, inputshuffle', targetshuffledb2','reduction',1);
     
     testTarget = targetshuffledb2(tr.testInd);
     testFit = net1(inputshuffle(tr.testInd,:)');
     
     performance = mse(testTarget,testFit');
-    archString = sprintf('%.0f,' , netArch{retrainingIteration});
-    archString = archString(1:end - 1);
-    disp(['The performance with hidden layer(s) of [' , archString, '] is an mse of ', num2str(performance)]);
-    Nets = [Nets performance];
+    %archString = sprintf('%.0f,' , netArch{retrainingIteration});
+    %archString = archString(1:end - 1);
+    disp(['The mse performance was: ', num2str(performance)]);
+    disp(['This neural Nets prediction of a test point: ', num2str(net1(inputshuffle(testInd(1,1),:)'))]);
+    Nets = [Nets net1];
+    
 end
