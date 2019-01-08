@@ -138,7 +138,7 @@ netArch = {[64, 16, 4], [100, 10], [36,6],[10,5], [5,3], 213, 100, 5, 3, 1};
 [trainInd,valInd,testInd] = dividerand(size(inputshuffle, 1));
 
 for retrainingIteration = 1:size(netArch,2)
-    net.performFcn='mpe';
+    net.performFcn= mae();
     net = fitnet(netArch{retrainingIteration}, 'trainscg');
     net.divideFcn = 'divideind';
     net.divideParam.trainInd = trainInd;
