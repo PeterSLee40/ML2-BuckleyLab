@@ -136,15 +136,16 @@ targetshuffleell = inputtarget(:, size(input,2) + 3);
 Nets = [];
 netArch = {[100, 10], [36,6],[10,5], [5,3], 213, 100, 5, 3, 1};
 [trainInd,valInd,testInd] = dividerand(size(inputshuffle, 1));
+net = fitnet(netArch{retrainingIteration}, 'trainscg');
+net.divideFcn = 'divideind';
+net.divideParam.trainInd = trainInd;
+net.divideParam.valInd = valInd;
+net.divideParam.testInd = testInd;
+net.trainParam.max_fail = 5000;
+net.trainParam.epochs=10000;
+
 for retrainingIteration = 1:size(netArch,2)
-    net = fitnet(netArch{retrainingIteration}, 'trainscg');
-    net.divideFcn = 'divideind';
-    net.divideParam.trainInd = trainInd;
-    net.divideParam.valInd = valInd;
-    net.divideParam.testInd = testInd;
-    net.trainParam.max_fail = 50;
     [net1, tr] = train(net, inputshuffle', targetshuffledb2','reduction',1);
-    
     testTarget = targetshuffledb2(tr.testInd);
     testFit = net1(inputshuffle(tr.testInd,:)');
     

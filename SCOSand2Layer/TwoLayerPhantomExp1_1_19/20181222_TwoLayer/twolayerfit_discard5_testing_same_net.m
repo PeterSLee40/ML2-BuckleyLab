@@ -143,7 +143,7 @@ for retrainingIteration = 1:5
     net.divideParam.valInd = valInd;
     net.divideParam.testInd = testInd;
     net.initFcn = 'initlay';
-    net.layers{i}.initFcn = 'initwb';
+    net.layers{1:2}.initFcn = 'initwb';
     net.trainParam.epochs=10000;
     [net1, tr] = train(net, inputshuffle', targetshuffledb2','reduction',1);
     
