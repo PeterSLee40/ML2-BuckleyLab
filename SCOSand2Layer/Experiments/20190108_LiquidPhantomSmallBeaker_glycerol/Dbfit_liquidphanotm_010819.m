@@ -13,15 +13,16 @@ good_start = 2;
 %Data directory
 fdir = './';
 
-id = '20';
+
+id = '15';
 
 
 % SD distance
-SD_dist = 20;%mm 
-used_ch = 1;%Only looking at DCS data from detector 2
+SD_dist = 15;%mm 
+used_ch = 1;%Only looking at DCS data from detector 1
 
-mua = 0.1298;%cm-1
-musp = 6.8139;%cm-1
+mua = 0.1302;%cm-1
+musp =6.7607;%cm-1
     
 %Define time points, tau, for g2 curves, FIXED TAU IN LABVIEW in Aug 2015!!!!  From sample.cpp code from jixiang to my gmail  on 3/18/15
 first_delay=2e-7;
@@ -64,7 +65,9 @@ datalength=70;
 avgnum=10;
 cutoff_I=30;%kHz
 cutoffCOV=20;%require COV to be less than cutoff
-n0=1.38;%index of refraction for tissue
+
+n0=1.39;%index of refraction for 50-50 glycerol
+
 lambda=850*1e-6;%wavelength in mm
 k0=2*pi*n0/lambda; %this is the k0 for flow!
 R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
@@ -223,5 +226,6 @@ temp = 50:-2:30;
 figure, semilogx(DelayTime,signal(5,:),'k-','LineWidth',1);
 hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),'k--','LineWidth',2);
 axis([4e-7 1e-2 0.95 1.6]);
+mean(mean_fit)
 %end     
 %save repfit_38c15mm_cut1.005.mat DelayTime signal Curvefitg2avg

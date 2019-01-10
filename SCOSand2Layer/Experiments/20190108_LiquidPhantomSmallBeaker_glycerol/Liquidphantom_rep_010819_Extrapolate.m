@@ -9,7 +9,7 @@ figure_size = [200 200 800 500];
 %load lambda.mat
 lambda = [730 690 750 775 785 800 825 830];
 
-lambda_idx = [1 2 3 5 6 8];
+lambda_idx = [1 2 3 6 8];
 
 load colors.mat
 
@@ -33,7 +33,7 @@ usedlambda_ind= 1:1:8;
 
 exp = '1';
 
-n0=1.38;%index of refraction for phantom
+n0=1.39;%index of refraction for phantom
 c=2.99792458e10; %speed of light in vacuum,cm/s
 v=c/n0; %speed of light in medium
 w=2*pi*110e6;%RF modulation frequency ISS uses 110MHz
