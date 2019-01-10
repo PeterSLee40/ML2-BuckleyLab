@@ -137,6 +137,7 @@ Nets = [];
 [trainInd,valInd,testInd] = dividerand(size(inputshuffle, 1));
 for retrainingIteration = 1:5
     net = fitnet([5,3], 'trainscg');
+    net.performFcn = 'mae';
     net.trainParam.max_fail = 5000;
     net.divideFcn = 'divideind';
     net.divideParam.trainInd = trainInd;
@@ -150,7 +151,7 @@ for retrainingIteration = 1:5
     testTarget = targetshuffledb2(tr.testInd);
     testFit = net1(inputshuffle(tr.testInd,:)');
     
-    performance = mse(testTarget,testFit');
+    performance = mean(abs(testTarget - testFit')./testTarget);
     %archString = sprintf('%.0f,' , netArch{retrainingIteration});
     %archString = archString(1:end - 1);
     disp(['The mse performance was: ', num2str(performance)]);
