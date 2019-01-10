@@ -42,28 +42,28 @@ def readData(fileName, encoding="utf8"):
         fTarget = fTarget.astype(np.float)
     return fData, fTarget
 def createNeuralNet(Xsize,Ysize, opt="Adam",loss='mean_squared_error',
-    HLayers = (1), actFunc = 'relu'):
+    HLayers = (1), actFunc = 'tansig'):
     model = Sequential()
     model.add(Dense(Xsize, input_dim = Xsize,kernel_initializer='he_uniform',
-                kernel_regularizer=regularizers.l2(0.0),
-                activity_regularizer=regularizers.l1(0.0)))
+                kernel_regularizer=regularizers.l2(0.0000),
+                activity_regularizer=regularizers.l1(0.0001)))
     model.add(Activation(actFunc))
     #model.add(BatchNormalization())
-    #model.add(Dropout(0.5))
+    #model.add(Dropout(0.1))
 
     if type(HLayers) == tuple:
         for curLayerSize in HLayers:
             model.add(Dense(curLayerSize,kernel_initializer='he_uniform',
-                kernel_regularizer=regularizers.l2(0.00),
-                activity_regularizer=regularizers.l1(0.00)))
+                kernel_regularizer=regularizers.l2(0.0000),
+                activity_regularizer=regularizers.l1(0.0001)))
             model.add(Activation(actFunc))
             #model.add(BatchNormalization())
-    #        model.add(Dropout(0.5))
+            #model.add(Dropout(0.1))
     else:
         model.add(Dense(HLayers))
         model.add(Activation(actFunc))
         #model.add(BatchNormalization())
-     #   model.add(Dropout(0.5))
+        #model.add(Dropout(0.1))
     model.add(Dense(Ysize,kernel_initializer='he_uniform'))
     model.compile(loss='mean_squared_error', optimizer = opt)
     return model
@@ -92,19 +92,21 @@ x_test = scaler.transform(x_test)
 #goodscaler = scaler
 
 learningrate = 0.01
-opt= optimizers.Adam(lr = learningrate)
-HiddenLayers = (4, 2)
+#opt = None
+opt= optimizers.Adam(lr = learningrate, decay = 0.000)
+#opt = keras.optimizers.SGD(lr=learningrate, momentum=0.1, decay=0.0, nesterov=False)
+HiddenLayers = (10, 5)
 Datasize = fData.shape[1]
 if (type(fTarget) == list):
     Targetsize = fTarget.shape[1]
 else: 
     Targetsize = 1
-reg = createNeuralNet(Datasize, Targetsize, opt = opt, HLayers = HiddenLayers, actFunc = 'relu')
+reg = createNeuralNet(Datasize, Targetsize, opt = opt, HLayers = HiddenLayers, actFunc = 'tanh')
 earlyStop = EarlyStopping(monitor='val_loss', patience = 20, mode='auto')
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.3,
                       patience=3, min_lr=0.00001)
 
-history = reg.fit(x_train, y_train, batch_size=16, callbacks = [reduce_lr, earlyStop], epochs = 1000, validation_split = .15)
+history = reg.fit(x_train, y_train, batch_size=100, callbacks = [reduce_lr, earlyStop], epochs = 1000, validation_split = .15)
 error = reg.evaluate(x_test, y_test)
 plotHistory(history)
 reg.save('nn8SDinttime3_Keras_tuning_training1.h5')
