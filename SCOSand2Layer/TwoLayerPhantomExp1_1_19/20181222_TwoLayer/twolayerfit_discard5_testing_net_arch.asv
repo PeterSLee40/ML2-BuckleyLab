@@ -135,7 +135,7 @@ targetshuffledb2 = (inputtarget(:, size(input,2) + 2));
 targetshuffleell = inputtarget(:, size(input,2) + 3);
 Nets = [];
 netArch = {[64, 16, 4], [100, 10], [36,6],[10,5], [5,3], 213, 100, 5, 3, 1};
-netArch = {[10, 10], [10, 4], [8, 4], [9, 3]};
+netArch = {10
 [trainInd,valInd,testInd] = dividerand(size(inputshuffle, 1));
 
 for retrainingIteration = 1:size(netArch,2)
@@ -148,7 +148,7 @@ for retrainingIteration = 1:size(netArch,2)
     net.trainParam.max_fail = 1000;
     net.trainParam.epochs=5000;
     net.performFcn= 'mae';
-    [net1, tr] = train(net, inputshuffle', targetshuffledb2',{}, {}, 100./(targetshuffledb2'), 'useGPU', 'no');
+    [net1, tr] = train(net, inputshuffle', targetshuffledb2',{}, {}, 100./(targetshuffledb2', 'useGPU', 'yes'));
     
     testTarget = targetshuffledb2(tr.testInd);
     testFit = net1(inputshuffle(tr.testInd,:)');
