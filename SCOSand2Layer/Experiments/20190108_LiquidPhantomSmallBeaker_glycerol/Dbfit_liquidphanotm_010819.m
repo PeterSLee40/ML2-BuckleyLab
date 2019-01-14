@@ -4,7 +4,7 @@ clear all
 %ext='';
 %time=[1 2 3 4 5 6 7];% 12 13];
 %ratID = 'rat5';
-
+addpath('../../functions');
 plotfits=1;%If you want to display how well your fit compares to your raw g2 data
 plotfigs=1;
 fixbeta=0;%doesnt work yet in this code, must = 0
@@ -209,7 +209,7 @@ temp = 50:-2:30;
             Dbfit(:)=NaN;
             throwout=1;
         end
-        
+        allcorrset(II,:,:,:) = corrset;
         
         mean_fit(II) = nanmean(Dbfit)*1e6; % unit 10^-8 cm2/s
         beta_fit(II) = nanmean(beta);
@@ -219,6 +219,7 @@ temp = 50:-2:30;
         if II < 3 
         clear beta Dbfit Curvefitg2avg signal_alldets signal corr2fit sigma corrset corrset_intensity corrset_times
         end 
+        
         %close all
     end
 
