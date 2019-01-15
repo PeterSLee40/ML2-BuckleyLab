@@ -21,8 +21,8 @@ id = '15';
 SD_dist = 15;%mm 
 used_ch = 1;%Only looking at DCS data from detector 1
 
-mua = 0.1302;%cm-1
-musp =6.7607;%cm-1
+mua = 0.1251;%cm-1
+musp = 7.0701;%cm-1
     
 %Define time points, tau, for g2 curves, FIXED TAU IN LABVIEW in Aug 2015!!!!  From sample.cpp code from jixiang to my gmail  on 3/18/15
 first_delay=2e-7;

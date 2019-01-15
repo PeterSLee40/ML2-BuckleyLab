@@ -1,6 +1,10 @@
-close all
-clear all
-
+function [meanDbfit, meanbetafit, meanbetastdfit] = Dbfit_liquidphantom_201990108_Twolayer(SD_dist, plotfits)
+if (~exist('plotfits'))
+    plotfits = true;
+end
+if (~exist('SD_dist'))
+    SD_dist = 10;
+end
 %ext='';
 %time=[1 2 3 4 5 6 7];% 12 13];
 %ratID = 'rat5';
@@ -12,14 +16,12 @@ good_start = 2;
 
 %Data directory
 fdir = './';
-
-
 id = 'HighIntensity';
 
-
 % SD distance
-SD_dist = 15;%mm 
-used_ch = 1;%Only looking at DCS data from detector 1
+
+Rho = [5, 10, 15, 20];
+used_ch = find(Rho == SD_dist);%Only looking at DCS data from detector 2
 
 mua = 0.1302;%cm-1
 musp =6.7607;%cm-1
@@ -66,23 +68,16 @@ avgnum=10;
 cutoff_I=30;%kHz
 cutoffCOV=20;%require COV to be less than cutoff
 
-n0=1.39;%index of refraction for 50-50 glycerol
+n0=1.38;%index of refraction for 50-50 glycerol
 
 lambda=850*1e-6;%wavelength in mm
 k0=2*pi*n0/lambda; %this is the k0 for flow!
 R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
-
-
 meanbeta=0.4;
-
 temp = 50:-2:30;
-
 %for temp_idx = 1:11;
-    
     for II = 1:5
-        
         maxfiles = 6;
-        
         %Load DCS data 
         for i=1:maxfiles
             if exist([fdir 'TwoLayer_' id '_' num2str(II) '_flow_' num2str(i-1) '.dat'])~=0
@@ -135,7 +130,7 @@ temp = 50:-2:30;
                 
                 %FIT G2 FOR CBFi and BETA
                 if fixbeta
-                    beta(i)=mean([1.5*corr2fit{i}(1) corr2fit{i}(2) 0.5*corr2fit{i}(3)])-1;
+                    beta(i) = mean([1.5*corr2fit{i}(1) corr2fit{i}(2) 0.5*corr2fit{i}(3)])-1;
                     Dbfit(i) = fminsearchbnd(@(x) dcs_g2_Db_GT(x(1),beta(i),taustmp,corr2fit{i},SD_dist,mua,musp,1),guess(1),lb(1),ub(1));
                 else
                     %THIS IS WHERE THE FIT IS DONE, LOOK AT
@@ -227,6 +222,8 @@ temp = 50:-2:30;
 figure, semilogx(DelayTime,signal(5,:),'k-','LineWidth',1);
 hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),'k--','LineWidth',2);
 axis([4e-7 1e-2 0.95 1.6]);
-mean(mean_fit)
+meanDbfit = nanmean(mean_fit)
+meanbetafit = nanmean(beta_fit)
+meanbetastdfit = nanmean(stdev_beta_fit)
 %end     
 %save repfit_38c15mm_cut1.005.mat DelayTime signal Curvefitg2avg
