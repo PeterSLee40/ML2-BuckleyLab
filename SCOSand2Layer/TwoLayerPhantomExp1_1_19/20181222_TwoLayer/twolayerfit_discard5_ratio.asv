@@ -69,13 +69,13 @@ estimatedDb1 = Dbfit_2layer_discard5_estimate(10, false);
 Db1s = estimatedDb1*.75:estimatedDb1*.01:estimatedDb1*.90;
 constants
 tau = DelayTime(taurange);
-Ratio = 2:.1:10;
+Ratio = 1:.1:10;
 ell = 0.90:.01:1.10;
 
 %how many times to sample from Beta
 Betas = 1;
 %how many times to sample mua and musp (this will slow down your process)
-Rep = 20;
+Rep = 1;
 
 
 meanBeta = mean(betafit);
@@ -91,7 +91,7 @@ inputshuffle = input;   %inputnn =  input;
 targetshuffle = target;
 load gauss_lag_5000.mat
 Rhos = [1.0, 1.5, 2.0];
-inttime = 5;
+inttime = 3;
 %top layer
 mua1=0.1287; mus1=6.7790;
 %bottom layer
@@ -110,8 +110,8 @@ for db1 = Db1s*1e-2
             for rep = 1:Rep
                 db2 = db1*ratio;
                 %db2 = db1*10^ratio;
-                curmua1 = mua1.*(randn*.01+1); curmus1 = mus1.*(randn*.01+1);
-                curmua2 = mua2.*(randn*.02+1);  curmus2 = mus2.*(randn*.02+1);
+                %curmua1 = mua1.*(randn*.01+1); curmus1 = mus1.*(randn*.01+1);
+                %curmua2 = mua2.*(randn*.02+1);  curmus2 = mus2.*(randn*.02+1);
                 %curmua1 = mua1; curmus1 = mus1;
                 %curmua2 = mua2; curmus2 = mus2;
                 %tau = DelayTime(1:120);
@@ -127,7 +127,7 @@ for db1 = Db1s*1e-2
                     g2s_noise = noises + g2s;
                     input(j,:) = (g2s_noise(:)');
                     %inputnn(j,:) = (g2s(:)');
-                    target(j,:) = ([db1*1e8 ratio]);
+                    target(j,:) = ([db1*1e8 ratio, db2*1e8]);
                 end
             end
         end
@@ -139,28 +139,51 @@ inputtarget = ([input target]);
 inputtarget = (inputtarget(randperm(size(inputtarget,1)),:));
 inputshuffle = (inputtarget(:, 1:size(inputtarget,2)-3));
 targetshuffledb1 = inputtarget(:, size(input,2) + 1);
-targetshuffledb2 = (inputtarget(:, size(input,2) + 2));
-targetshuffleratio = inputtarget(:, size(input,2) + 3);
+targetshuffleratio = (inputtarget(:, size(input,2) + 2));
+targetshuffledb2 = inputtarget(:, size(input,2) + 3);
 Nets = [];
 [trainInd,valInd,testInd] = dividerand(size(inputshuffle, 1));
-
+j = 0
 for retrainingIteration = 1:10
     disp(['retrainingIteration: ',num2str(retrainingIteration)])
-    net = fitnet([5 3], 'trainscg');
-    net = train(net, inputshuffle', targetshuffleratio', 'useGPU', 'no');
+    net = fitnet([3], 'trainscg');
+    net.performFcn= 'mae';
+    %net.trainParam.epochs = 100;
+    net.trainParam.max_fail = 5;
+    net.divideFcn = 'divideind';
+    net.divideParam.trainInd = trainInd;
+    net.divideParam.valInd = valInd;
+    net.divideParam.testInd = testInd;
+    [net1, tr] = train(net, inputshuffle', targetshuffleratio',{}, {}, 100./(targetshuffleratio'), 'useGPU', 'no');
+    [net2, tr] = train(net, inputshuffle', targetshuffledb1',{}, {}, 100./(targetshuffledb1'), 'useGPU', 'no');
     Nets= [Nets net];
     asfas = squeeze(mean(corrset(2:5,taurange,2:4)));
     asfas = asfas';
     asfas = asfas(:);
-    currentPrediction1 = net(asfas);
-    disp(['mean g2 Prediction: ',num2str(currentPrediction1)])
-    meanDb2Prediction1(retrainingIteration) = currentPrediction1;
+    ratioprediction1 = net1(asfas)
+    db1prediction1 = net2(asfas)
+    meanAllcorrset = squeeze(mean(mean(Allcorrset(:,2:5,taurange,2:4))));
+    meanAllcorrset = meanAllcorrset';
+    meanAllcorrset = meanAllcorrset(:);
+    db2All = net1(meanAllcorrset)*net2(meanAllcorrset)
+    disp(['mean g2 Prediction: ',num2str(ratioprediction1*db1prediction1)])
+    meanDb2Prediction1(retrainingIteration) = ratioprediction1*db1prediction1;
     for i = 1:4
         asfas = squeeze(corrset(i + 1,taurange,2:4));
         asfas = asfas';
         asfas = asfas(:);
-        db2Prediction(i) = net(asfas);
+        db2Prediction(i) = net1(asfas)*net2(asfas);
     end
+    for a = 1:5
+        for b = 2:5
+                j = j + 1;
+                data = squeeze(Allcorrset(a,b, taurange, 2:4))';
+                data = data(:);
+                db2AllPrediction(j) = net1(data)*net2(data);
+        end
+    end
+    mean(db2AllPrediction)
+    
     currentPrediction2 = mean(db2Prediction);
     disp(['mean of g2 Predictions: ',num2str(currentPrediction2)]);
     meanDb2Prediction2(retrainingIteration) = currentPrediction2;
