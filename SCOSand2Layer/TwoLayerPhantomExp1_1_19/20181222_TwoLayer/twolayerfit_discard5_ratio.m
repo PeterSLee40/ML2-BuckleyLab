@@ -149,7 +149,7 @@ for retrainingIteration = 1:1
     net.performFcn= 'mae';
     net.divideParam.testRatio  = 0;
     net.trainParam.epochs = 10000;
-    %net.trainParam.max_fail = 10;
+    net.trainParam.max_fail = 100;
     [net1, tr] = train(net, inputshuffle', targetshuffleratio',{}, {}, 100./(targetshuffleratio'), 'useGPU', 'yes');
     [net2, tr] = train(net, inputshuffle', targetshuffledb1',{}, {}, 100./(targetshuffledb1'), 'useGPU', 'yes');
     [net3, tr] = train(net, inputshuffle', targetshuffledb2',{}, {}, 100./(targetshuffledb2'), 'useGPU', 'yes');
@@ -164,7 +164,7 @@ for retrainingIteration = 1:1
     meanOfAllg2_Db2PredictionIter = net3(meanAllcorrset)
     meanOfAllg2_RatioPrediction(retrainingIteration) = meanOfAllg2_RatioPredictionIter;
     meanOfAllg2_Db2Prediction(retrainingIteration) = meanOfAllg2_Db2PredictionIter;
-
+    j = 0;
     for a = 1:5
         for b = 2:5
                 j = j + 1;
@@ -172,7 +172,7 @@ for retrainingIteration = 1:1
                 data = data(:);
                 trial_ratioPrediction(j) = net1(data);
                 trial_db1Prediction(j) = net2(data);                
-                trial_db2ratioPrediction(j) = ratioPrediction(j)*db1AllPrediction(j);
+                trial_db2ratioPrediction(j) = net2(data)*net1(data);
                 trial_db2Prediction(j) = net3(data);
         end
     end
