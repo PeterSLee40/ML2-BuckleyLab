@@ -73,9 +73,9 @@ Ratio = 1:.1:10;
 ell = 0.90:.01:1.10;
 
 %how many times to sample from Beta
-Betas = 1;
+Betas = 5;
 %how many times to sample mua and musp (this will slow down your process)
-Rep = 20;
+Rep = 1;
 
 
 meanBeta = mean(betafit);
@@ -118,7 +118,7 @@ for db1 = Db1s*1e-2
                 [g1s, gamma] = getG1(n0,Reff,curmua1,curmus1,db1,tau,lambda,Rhos',w,l,curmua2,curmus2,db2,gl);
                 g1s = squeeze(g1s)';
                 for beta = 1:Betas,    j = j + 1;
-                    betaRand = meanBeta.*(randn(1)*.05+1);
+                    betaRand = meanBeta.*(randn(1)*.01+1);
                     intensities = [400 ,80, 12].*1e3;
                     sigmas = getDCSNoise(intensities,T,inttime,betaRand,gamma,tau);
                     noises = sigmas.*randn(numDetectors, size(tau,2));
@@ -142,49 +142,40 @@ targetshuffledb1 = inputtarget(:, size(input,2) + 1);
 targetshuffleratio = (inputtarget(:, size(input,2) + 2));
 targetshuffledb2 = inputtarget(:, size(input,2) + 3);
 Nets = [];
-[trainInd,valInd,testInd] = dividerand(size(inputshuffle, 1));
 j = 0
-for retrainingIteration = 1:10
+for retrainingIteration = 1:1
     disp(['retrainingIteration: ',num2str(retrainingIteration)])
-    net = fitnet([3], 'trainscg');
+    net = fitnet([5], 'trainscg');
     net.performFcn= 'mae';
-    %net.trainParam.epochs = 100;
-    net.trainParam.max_fail = 3;
-    net.divideFcn = 'divideind';
-    net.divideParam.trainInd = trainInd;
-    net.divideParam.valInd = valInd;
-    net.divideParam.testInd = testInd;
-    [net1, tr] = train(net, inputshuffle', targetshuffleratio',{}, {}, 100./(targetshuffleratio'), 'useGPU', 'no');
-    [net2, tr] = train(net, inputshuffle', targetshuffledb1',{}, {}, 100./(targetshuffledb1'), 'useGPU', 'no');
+    net.divideParam.testRatio  = 0;
+    net.trainParam.epochs = 10000;
+    %net.trainParam.max_fail = 10;
+    [net1, tr] = train(net, inputshuffle', targetshuffleratio',{}, {}, 100./(targetshuffleratio'), 'useGPU', 'yes');
+    [net2, tr] = train(net, inputshuffle', targetshuffledb1',{}, {}, 100./(targetshuffledb1'), 'useGPU', 'yes');
+    [net3, tr] = train(net, inputshuffle', targetshuffledb2',{}, {}, 100./(targetshuffledb2'), 'useGPU', 'yes');
     Nets= [Nets net];
-    asfas = squeeze(mean(corrset(2:5,taurange,2:4)));
-    asfas = asfas';
-    asfas = asfas(:);
-    ratioprediction1 = net1(asfas)
-    db1prediction1 = net2(asfas)
+    %takes mean of all the g2 curves in experiment
     meanAllcorrset = squeeze(mean(mean(Allcorrset(:,2:5,taurange,2:4))));
     meanAllcorrset = meanAllcorrset';
     meanAllcorrset = meanAllcorrset(:);
-    db2All = net1(meanAllcorrset)*net2(meanAllcorrset)
-    disp(['mean g2 Prediction: ',num2str(ratioprediction1*db1prediction1)])
-    meanDb2Prediction1(retrainingIteration) = ratioprediction1*db1prediction1;
-    for i = 1:4
-        asfas = squeeze(corrset(i + 1,taurange,2:4));
-        asfas = asfas';
-        asfas = asfas(:);
-        db2Prediction(i) = net1(asfas)*net2(asfas);
-    end
+    %disp(['mean g2 Prediction: ',num2str(ratioprediction1*db1prediction1)])
+    
+    meanOfAllg2_RatioPredictionIter = net1(meanAllcorrset)*net2(meanAllcorrset)
+    meanOfAllg2_Db2PredictionIter = net3(meanAllcorrset)
+    meanOfAllg2_RatioPrediction(retrainingIteration) = meanOfAllg2_RatioPredictionIter;
+    meanOfAllg2_Db2Prediction(retrainingIteration) = meanOfAllg2_Db2PredictionIter;
+
     for a = 1:5
         for b = 2:5
                 j = j + 1;
                 data = squeeze(Allcorrset(a,b, taurange, 2:4))';
                 data = data(:);
-                db2AllPrediction(j) = net1(data)*net2(data);
+                trial_ratioPrediction(j) = net1(data);
+                trial_db1Prediction(j) = net2(data);                
+                trial_db2ratioPrediction(j) = ratioPrediction(j)*db1AllPrediction(j);
+                trial_db2Prediction(j) = net3(data);
         end
     end
-    mean(db2AllPrediction)
-    
-    currentPrediction2 = mean(db2Prediction);
-    disp(['mean of g2 Predictions: ',num2str(currentPrediction2)]);
-    meanDb2Prediction2(retrainingIteration) = currentPrediction2;
+    meanOfAllTrialsRatiodb2 = mean(trial_db2ratioPrediction)
+    meanOfAllTrialsdb2 = mean(trial_db2Prediction)
 end
