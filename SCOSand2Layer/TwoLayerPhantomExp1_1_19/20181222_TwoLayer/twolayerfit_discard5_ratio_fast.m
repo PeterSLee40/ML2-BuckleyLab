@@ -71,7 +71,7 @@ Ratio = 1:.1:10;
 ell = 0.90:.01:1.10;
 
 %how many times to sample from Beta
-Betas = 1;
+Betas = 5;
 %how many times to sample mua and musp (this will slow down your process)
 Rep = 1;
 
@@ -89,7 +89,7 @@ inputshuffle = input;   %inputnn =  input;
 targetshuffle = target;
 load gauss_lag_5000.mat
 Rhos = [1.0, 1.5, 2.0];
-inttime = 1;
+inttime = 5;
 %top layer
 mua1=0.1287; mus1=6.7790;
 %bottom layer
@@ -111,10 +111,10 @@ for db1 = Db1s*1e-2
                 curmua1 = mua1; curmus1 = mus1;
                 curmua2 = mua2; curmus2 = mus2;
                 %tau = DelayTime(1:120);
-                [g1s, gamma] = getG1(n0,Reff,curmua1,curmus1,db1,tau,lambda,Rhos',w,l,curmua2,curmus2,db2,gl);
+                [g1s, gamma] = getG1(n0,R,curmua1,curmus1,db1,tau,lambda,Rhos',w,l,curmua2,curmus2,db2,gl);
                 g1s = squeeze(g1s)';
                 for beta = 1:Betas,    j = j + 1;
-                    betaRand = meanBeta.*(randn(1)*.02+1);
+                    betaRand = meanBeta.*(randn(1)*.01+1);
                     intensities = [400 ,80, 12].*1e3;
                     sigmas = getDCSNoise(intensities,T,inttime,betaRand,gamma,tau);
                     noises = sigmas.*randn(numDetectors, size(tau,2));
@@ -158,14 +158,19 @@ for a = 1:5
 end
 testTarget = repmat(.67, 20, 1)
 j = 0;
-for reg = [.5]
+for reg = [.01]
 for retrainingIteration = 1:10
     disp(['retrainingIteration: ',num2str(retrainingIteration)])
     
     %%%%CREATION OF NEURAL NET%%%%
-    
-    net = fitnet([1000 200], 'trainscg');
-    net.performFcn= 'mse'; %MEAN AVERAGE ERROR
+    RandStream.setGlobalStream (RandStream ('mrg32k3a','Seed', 1234));
+    net = fitnet([15 5], 'trainscg');
+    net.initFcn='initlay';
+    net.layers{1}.initFcn='initnw';
+    net.layers{2}.initFcn='initnw';
+    net.layers{3}.initFcn='initnw';
+    %net = feedforwardnet([100 10], 'trainbfg');
+    net.performFcn= 'mae'; %MEAN AVERAGE ERROR
     net.divideParam.testRatio  = 0;
     net.trainParam.epochs = 10000;
     net.trainParam.max_fail = 1000;
