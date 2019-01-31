@@ -136,7 +136,7 @@ targetshuffleell = inputtarget(:, size(input,2) + 3);
 Nets = [];
 netArch = {[64, 16, 4], [100, 10], [36,6],[10,5], [5,3], 213, 100, 5, 3, 1};
 netArch = {[10, 10], [10, 4], [8, 4], [9, 3]};
-[trainInd,valInd,testInd] = dividerand(size(inputshuffle, 1));
+[trainInd,valInd] = dividerand(size(inputshuffle, 1));
 
 for retrainingIteration = 1:size(netArch,2)
     architecture = netArch{retrainingIteration};

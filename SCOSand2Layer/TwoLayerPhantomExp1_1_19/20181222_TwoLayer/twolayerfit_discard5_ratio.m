@@ -76,7 +76,7 @@ ell = 0.90:.01:1.10;
 %how many times to sample from Beta
 Betas = 3;
 %how many times to sample mua and musp (this will slow down your process)
-Rep = 1;
+Rep = 1 ;
 
 
 meanBeta = mean(betafit);

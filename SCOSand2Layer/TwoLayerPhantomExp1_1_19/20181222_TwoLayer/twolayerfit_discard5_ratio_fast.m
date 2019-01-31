@@ -64,7 +64,7 @@ end
 estimatedDb1 = mean(Dbfit);
 estimatedDb1 = Dbfit_2layer_discard5_estimate(10, false);
 
-Db1s = estimatedDb1*.7:estimatedDb1*.01:estimatedDb1*.90;
+Db1s = estimatedDb1*.75:estimatedDb1*.01:estimatedDb1*.90;
 constants
 tau = DelayTime(taurange);
 Ratio = 1:.1:10;
@@ -89,7 +89,7 @@ inputshuffle = input;   %inputnn =  input;
 targetshuffle = target;
 load gauss_lag_5000.mat
 Rhos = [1.0, 1.5, 2.0];
-inttime = 5;
+inttime = 1;
 %top layer
 mua1=0.1287; mus1=6.7790;
 %bottom layer
@@ -138,17 +138,50 @@ targetshuffledb1 = inputtarget(:, size(input,2) + 1);
 targetshuffleratio = (inputtarget(:, size(input,2) + 2));
 targetshuffledb2 = inputtarget(:, size(input,2) + 3);
 Nets = [];
+[trainInd,valInd] = dividerand(size(inputshuffle, 1), .80, .20, 0);
+
 j = 0
-for retrainingIteration = 1:21
+trial_ratioPrediction = 0;
+trial_db2Prediction = 0;
+trial_db1Prediction = 0;
+trial_db2ratioPrediction = 0;
+
+testSet = [];
+j = 0;
+for a = 1:5
+    for b = 2:5
+        j = j + 1;
+        data = squeeze(Allcorrset(a,b, taurange, 2:4))';
+        data = data(:)';
+        testSet(j, :) = data;
+    end
+end
+testTarget = repmat(.67, 20, 1)
+j = 0;
+for reg = [.5]
+for retrainingIteration = 1:10
     disp(['retrainingIteration: ',num2str(retrainingIteration)])
-    net = fitnet([5], 'trainscg');
-    net.performFcn= 'mae';
+    
+    %%%%CREATION OF NEURAL NET%%%%
+    
+    net = fitnet([1000 200], 'trainscg');
+    net.performFcn= 'mse'; %MEAN AVERAGE ERROR
     net.divideParam.testRatio  = 0;
     net.trainParam.epochs = 10000;
-    net.trainParam.max_fail = 5;
-    [net1, tr] = train(net, inputshuffle', targetshuffleratio',{}, {}, 100./(targetshuffleratio'), 'useGPU', 'yes');
-    [net2, tr] = train(net, inputshuffle', targetshuffledb1',{}, {}, 100./(targetshuffledb1'), 'useGPU', 'yes');
+    net.trainParam.max_fail = 1000;
+    net.divideFcn = 'divideind';
+    net.divideParam.trainInd = trainInd;
+    net.divideParam.valInd = valInd;
+    net.performParam.regularization = reg;
+    net.performParam.normalization = 'standard';
+    
+    %net.trainParam.max_fail = 100;
+    %net1 = net;
+    %net2 = net;
+    %[net1, tr] = train(net, inputshuffle', targetshuffleratio',{}, {}, 100./(targetshuffleratio'), 'useGPU', 'yes');
+    %[net2, tr] = train(net, inputshuffle', targetshuffledb1',{}, {}, 100./(targetshuffledb1'), 'useGPU', 'yes');
     [net3, tr] = train(net, inputshuffle', targetshuffledb2',{}, {}, 100./(targetshuffledb2'), 'useGPU', 'yes');
+    %[net3, tr] = train(net, inputshuffle', targetshuffledb2');
     Nets= [Nets net];
     %takes mean of all the g2 curves in experiment
     meanAllcorrset = squeeze(mean(mean(Allcorrset(:,2:5,taurange,2:4))));
@@ -156,21 +189,19 @@ for retrainingIteration = 1:21
     meanAllcorrset = meanAllcorrset(:);
     %disp(['mean g2 Prediction: ',num2str(ratioprediction1*db1prediction1)])
    
-    meanOfAllg2_RatioPredictionIter = net1(meanAllcorrset)*net2(meanAllcorrset)
+    %meanOfAllg2_RatioPredictionIter = net1(meanAllcorrset)*net2(meanAllcorrset)
     meanOfAllg2_Db2PredictionIter = net3(meanAllcorrset)
-    meanOfAllg2_RatioPrediction(retrainingIteration) = meanOfAllg2_RatioPredictionIter;
+    %meanOfAllg2_RatioPrediction(retrainingIteration) = meanOfAllg2_RatioPredictionIter;
     meanOfAllg2_Db2Prediction(retrainingIteration) = meanOfAllg2_Db2PredictionIter;
-    for a = 1:5
-        for b = 2:5
-                j = j + 1;
-                data = squeeze(Allcorrset(a,b, taurange, 2:4))';
-                data = data(:);
-                trial_ratioPrediction(j) = net1(data);
-                trial_db1Prediction(j) = net2(data);                
-                trial_db2ratioPrediction(j) = net2(data)*net1(data);
-                trial_db2Prediction(j) = net3(data);
-        end
+    for a = 1:size(testSet,1)
+        data = testSet(a, :)';
+        j = j + 1;
+        %trial_ratioPrediction(j) = net1(data);
+        %trial_db1Prediction(j) = net2(data);                
+        %trial_db2ratioPrediction(j) = net2(data)*net1(data);
+        trial_db2Prediction(j) = net3(data);
     end
-    meanOfAllTrialsRatiodb2 = mean(trial_db2ratioPrediction)
+    %meanOfAllTrialsRatiodb2 = mean(trial_db2ratioPrediction)
     meanOfAllTrialsdb2 = mean(trial_db2Prediction)
+end
 end
