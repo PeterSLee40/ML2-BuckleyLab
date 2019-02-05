@@ -3,7 +3,6 @@ clear all
 
 addpath('..\..\functions');
 addpath('..\..\multilayer');
-load gauss_lag_5000.mat
 
 %ext='';
 %time=[1 2 3 4 5 6 7];% 12 13];
@@ -206,10 +205,9 @@ for II = 1:5
     end
     %close all
 end
-theoretical = beta*getG1(n0, R, mua*10, musp*10, .22e-8, DelayTime, lambda*1e4, SD_dist/10, 0, 1.0, mua*10, musp*10, .66e-8,gl).^2 + 1;
 figure, semilogx(DelayTime,signal(5,:),'k-','LineWidth',1);
 hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),'k--','LineWidth',2);
-hold on, semilogx(DelayTime, theoretical, 'k---', 'LineWidth', 3);
+hold on, semilogx(DelayTime, sque
 axis([4e-7 1e-2 0.95 1.6]);
 %end
 %save repfit_38c15mm_cut1.005.mat DelayTime signal Curvefitg2avg

@@ -139,6 +139,9 @@ targetshuffleratio = (inputtarget(:, size(input,2) + 2));
 targetshuffledb2 = inputtarget(:, size(input,2) + 3);
 Nets = [];
 [trainInd,valInd] = dividerand(size(inputshuffle, 1), .80, .20, 0);
+prepinputshuffle =  (inputshuffle - mean(inputshuffle, 2));
+pcacoeff = pca(prepinputshuffle);
+ppinputshuffle = prepinputshuffle*pcacoeff;
 
 j = 0
 trial_ratioPrediction = 0;
@@ -153,7 +156,7 @@ for a = 1:5
         j = j + 1;
         data = squeeze(Allcorrset(a,b, taurange, 2:4))';
         data = data(:)';
-        testSet(j, :) = data;
+        testSet(j, :) = normalize(data, 2) * pcacoeff;
     end
 end
 testTarget = repmat(.67, 20, 1)
@@ -163,7 +166,7 @@ for retrainingIteration = 1:10
     disp(['retrainingIteration: ',num2str(retrainingIteration)])
     
     %%%%CREATION OF NEURAL NET%%%%
-    RandStream.setGlobalStream (RandStream ('mrg32k3a','Seed', 1234));
+    %RandStream.setGlobalStream (RandStream ('mrg32k3a','Seed', 1234));
     net = fitnet([15 5], 'trainscg');
     net.initFcn='initlay';
     net.layers{1}.initFcn='initnw';
@@ -179,13 +182,12 @@ for retrainingIteration = 1:10
     net.divideParam.valInd = valInd;
     net.performParam.regularization = reg;
     net.performParam.normalization = 'standard';
-    
     %net.trainParam.max_fail = 100;
     %net1 = net;
     %net2 = net;
     %[net1, tr] = train(net, inputshuffle', targetshuffleratio',{}, {}, 100./(targetshuffleratio'), 'useGPU', 'yes');
     %[net2, tr] = train(net, inputshuffle', targetshuffledb1',{}, {}, 100./(targetshuffledb1'), 'useGPU', 'yes');
-    [net3, tr] = train(net, inputshuffle', targetshuffledb2',{}, {}, 100./(targetshuffledb2'), 'useGPU', 'yes');
+    [net3, tr] = train(net, (ppinputshuffle)', targetshuffledb2',{}, {}, 100./(targetshuffledb2'), 'useGPU', 'yes');
     %[net3, tr] = train(net, inputshuffle', targetshuffledb2');
     Nets= [Nets net];
     %takes mean of all the g2 curves in experiment
@@ -195,9 +197,9 @@ for retrainingIteration = 1:10
     %disp(['mean g2 Prediction: ',num2str(ratioprediction1*db1prediction1)])
    
     %meanOfAllg2_RatioPredictionIter = net1(meanAllcorrset)*net2(meanAllcorrset)
-    meanOfAllg2_Db2PredictionIter = net3(meanAllcorrset)
+    %meanOfAllg2_Db2PredictionIter = net3(meanAllcorrset)
     %meanOfAllg2_RatioPrediction(retrainingIteration) = meanOfAllg2_RatioPredictionIter;
-    meanOfAllg2_Db2Prediction(retrainingIteration) = meanOfAllg2_Db2PredictionIter;
+    %meanOfAllg2_Db2Prediction(retrainingIteration) = meanOfAllg2_Db2PredictionIter;
     for a = 1:size(testSet,1)
         data = testSet(a, :)';
         j = j + 1;
