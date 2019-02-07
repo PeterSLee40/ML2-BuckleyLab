@@ -9,7 +9,6 @@ end
 %time=[1 2 3 4 5 6 7];% 12 13];
 %ratID = 'rat5';
 addpath('../../functions');
-plotfits=1;%If you want to display how well your fit compares to your raw g2 data
 plotfigs=1;
 fixbeta=0;%doesnt work yet in this code, must = 0
 good_start = 2;
@@ -77,7 +76,7 @@ meanbeta=0.4;
 temp = 50:-2:30;
 %for temp_idx = 1:11;
     for II = 1:5
-        maxfiles = 6;
+        maxfiles = 5;
         %Load DCS data 
         for i=1:maxfiles
             if exist([fdir 'TwoLayer_' id '_' num2str(II) '_flow_' num2str(i-1) '.dat'])~=0

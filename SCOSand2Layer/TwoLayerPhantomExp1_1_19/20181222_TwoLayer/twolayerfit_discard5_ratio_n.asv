@@ -64,7 +64,7 @@ end
 estimatedDb1 = mean(Dbfit);
 estimatedDb1 = Dbfit_2layer_discard5_estimate(10, false);
 
-Db1s = estimatedDb1*.80:estimatedDb1*.01:estimatedDb1;
+Db1s = estimatedDb1*.80:estimatedDb1*.02:estimatedDb1;
 constants
 tau = DelayTime(taurange);
 Ratio = 1:.025:10;
@@ -73,7 +73,7 @@ ell = 0.90:.01:1.10;
 %how many times to sample from Beta
 Betas = 1;
 %how many times to sample mua and musp (this will slow down your process)
-Rep = 1;
+Rep = 4;
 N = 1.34:.01:1.42;
 
 meanBeta = mean(betafit);
@@ -99,11 +99,11 @@ j = 0;
 
 repnumber = 0;
 for db1 = Db1s*1e-2
-    repnumber = repnumber+1;
-    disp(repnumber)
-    tic
     for n0 = N
         R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
+        repnumber = repnumber+1;
+        disp(repnumber)
+        tic
         for ratio = Ratio
             for l = ell
                 for rep = 1:Rep
@@ -130,9 +130,9 @@ for db1 = Db1s*1e-2
                     end
                 end
             end
-        end    
+        end
+        toc
     end
-    toc
 end
 inputtarget = ([input target]);
 inputtarget = (inputtarget(randperm(size(inputtarget,1)),:));

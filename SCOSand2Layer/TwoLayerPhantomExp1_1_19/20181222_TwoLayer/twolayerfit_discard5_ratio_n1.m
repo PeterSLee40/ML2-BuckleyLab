@@ -10,7 +10,11 @@ close all
 
 addpath('..\..\functions');
 addpath('..\..\multilayer');
+<<<<<<< HEAD
 taurange = 5:80;
+=======
+taurange = 5:75;
+>>>>>>> 2a374af7f994dc83fe73345a1306ea617fe2d74d
 constants
 good_start = 5;
 %Data directory
@@ -64,17 +68,29 @@ end
 estimatedDb1 = mean(Dbfit);
 estimatedDb1 = Dbfit_2layer_discard5_estimate(10, false);
 
+<<<<<<< HEAD
 Db1s = estimatedDb1*.80:estimatedDb1*.01:estimatedDb1;
 constants
 tau = DelayTime(taurange);
 Ratio = 1:.025:10;
 ell = 0.90:.01:1.10;
+=======
+Db1s = estimatedDb1*.75:estimatedDb1*.02:estimatedDb1*.90;
+constants
+tau = DelayTime(taurange);
+Ratio = 1:.025:10;
+ell = 0.95:.01:1.05;
+>>>>>>> 2a374af7f994dc83fe73345a1306ea617fe2d74d
 
 %how many times to sample from Beta
 Betas = 1;
 %how many times to sample mua and musp (this will slow down your process)
 Rep = 1;
+<<<<<<< HEAD
 N = 1.34:.01:1.42;
+=======
+N = 1.35:.01:1.43;
+>>>>>>> 2a374af7f994dc83fe73345a1306ea617fe2d74d
 
 meanBeta = mean(betafit);
 T = T(taurange);
@@ -82,8 +98,12 @@ numDetectors = 3;
 g1s = zeros(numDetectors, size(taustmp,2));
 g2s = g1s;  g2s_noise = g1s;
 sigmas = zeros(numDetectors, size(tau,2));
+<<<<<<< HEAD
 
 siz = size(Db1s,2)*size(Ratio,2)*size(ell,2)*Rep*Betas*size(N,2);
+=======
+siz = size(N,2)*size(Db1s,2)*size(Ratio,2)*size(ell,2)*Rep*Betas;
+>>>>>>> 2a374af7f994dc83fe73345a1306ea617fe2d74d
 input = (zeros(siz,size(tau,2)*numDetectors));
 target = (zeros(siz,3));
 inputshuffle = input;   %inputnn =  input;
@@ -103,16 +123,27 @@ for db1 = Db1s*1e-2
     disp(repnumber)
     tic
     for n0 = N
+<<<<<<< HEAD
+=======
+        k0=2*pi*n0/lambda; %this is the k0 for flow!
+>>>>>>> 2a374af7f994dc83fe73345a1306ea617fe2d74d
         R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
         for ratio = Ratio
             for l = ell
                 for rep = 1:Rep
                     db2 = db1*ratio;
                     %db2 = db1*10^ratio;
+<<<<<<< HEAD
                     curmua1 = mua1.*(randn*.01+1); curmus1 = mus1.*(randn*.01+1);
                     curmua2 = mua2.*(randn*.01+1);  curmus2 = mus2.*(randn*.01+1);
                     %curmua1 = mua1; curmus1 = mus1;
                     %curmua2 = mua2; curmus2 = mus2;
+=======
+                    %curmua1 = mua1.*(randn*.01+1); curmus1 = mus1.*(randn*.01+1);
+                    %curmua2 = mua2.*(randn*.02+1);  curmus2 = mus2.*(randn*.02+1);
+                    curmua1 = mua1; curmus1 = mus1;
+                    curmua2 = mua2; curmus2 = mus2;
+>>>>>>> 2a374af7f994dc83fe73345a1306ea617fe2d74d
                     %tau = DelayTime(1:120);
                     [g1s, gamma] = getG1(n0,R,curmua1,curmus1,db1,tau,lambda,Rhos',w,l,curmua2,curmus2,db2,gl);
                     g1s = squeeze(g1s)';
@@ -120,7 +151,11 @@ for db1 = Db1s*1e-2
                         betaRand = meanBeta.*(randn(1)*.01+1);
                         intensities = [400 ,80, 12].*1e3;
                         sigmas = getDCSNoise(intensities,T,inttime,betaRand,gamma,tau);
+<<<<<<< HEAD
                         noises = (sigmas + .01).*randn(numDetectors, size(tau,2));
+=======
+                        noises = sigmas.*randn(numDetectors, size(tau,2));
+>>>>>>> 2a374af7f994dc83fe73345a1306ea617fe2d74d
                         %betasRand = repmat(betaRand',1,size(tau,2));
                         g2s = betaRand'.*g1s.^2 + 1;
                         g2s_noise = noises + g2s;
@@ -130,10 +165,18 @@ for db1 = Db1s*1e-2
                     end
                 end
             end
+<<<<<<< HEAD
         end    
     end
     toc
 end
+=======
+        end
+    end
+    toc
+end
+
+>>>>>>> 2a374af7f994dc83fe73345a1306ea617fe2d74d
 inputtarget = ([input target]);
 inputtarget = (inputtarget(randperm(size(inputtarget,1)),:));
 inputshuffle = (inputtarget(:, 1:size(inputtarget,2)-3));
@@ -159,27 +202,51 @@ for a = 1:5
         testSet(j, :) = data;
     end
 end
+<<<<<<< HEAD
 testTarget = repmat(.67, 20, 1)
 j = 0;
 for reg = [.5]
+=======
+testTarget = repmat(.67, 20, 1);
+j = 0;
+for reg = [.01]
+>>>>>>> 2a374af7f994dc83fe73345a1306ea617fe2d74d
     for retrainingIteration = 1:10
         disp(['retrainingIteration: ',num2str(retrainingIteration)])
         
         %%%%CREATION OF NEURAL NET%%%%
+<<<<<<< HEAD
         
         net = fitnet([64 8], 'trainscg');
         net.performFcn= 'mse'; %MEAN AVERAGE ERROR
         net.divideParam.testRatio  = 0;
         net.trainParam.epochs = 10000;
         net.trainParam.max_fail = 1000;
+=======
+        %RandStream.setGlobalStream (RandStream ('mrg32k3a','Seed', 1234));
+        net = fitnet(10, 'trainscg');
+        net.initFcn='initlay';
+        net.layers{1}.initFcn='initnw';
+        net.layers{2}.initFcn='initnw';
+        %net.layers{3}.initFcn='initnw';
+        %net = feedforwardnet([100 10], 'trainbfg');
+        net.performFcn= 'mae'; %MEAN AVERAGE ERROR
+        net.divideParam.testRatio  = 0;
+        net.trainParam.epochs = 10000;
+        net.trainParam.max_fail = 5;
+>>>>>>> 2a374af7f994dc83fe73345a1306ea617fe2d74d
         net.divideFcn = 'divideind';
         net.divideParam.trainInd = trainInd;
         net.divideParam.valInd = valInd;
         net.performParam.regularization = reg;
         net.performParam.normalization = 'standard';
+<<<<<<< HEAD
         
         %net.trainParam.max_fail = 100;
         %net1 = net;
+=======
+                %net1 = net;
+>>>>>>> 2a374af7f994dc83fe73345a1306ea617fe2d74d
         %net2 = net;
         %[net1, tr] = train(net, inputshuffle', targetshuffleratio',{}, {}, 100./(targetshuffleratio'), 'useGPU', 'yes');
         %[net2, tr] = train(net, inputshuffle', targetshuffledb1',{}, {}, 100./(targetshuffledb1'), 'useGPU', 'yes');

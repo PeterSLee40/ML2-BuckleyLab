@@ -13,11 +13,11 @@ good_start = 2;
 %Data directory
 fdir = './';
 
-id = '15';
+id = '20';
 
 
 % SD distance
-SD_dist = 15;%mm 
+SD_dist = 20;%mm 
 used_ch = 1;%Only looking at DCS data from detector 2
 
 mua = 0.1287;%cm-1
@@ -65,7 +65,7 @@ avgnum=10;
 cutoff_I=30;%kHz
 cutoffCOV=20;%require COV to be less than cutoff
 n0=1.38;%index of refraction for tissue
-lambda=850*1e-6;%wavelength in mm
+lambda=852*1e-6;%wavelength in mm
 k0=2*pi*n0/lambda; %this is the k0 for flow!
 R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
 
@@ -223,5 +223,6 @@ temp = 50:-2:30;
 figure, semilogx(DelayTime,signal(5,:),'k-','LineWidth',1);
 hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),'k--','LineWidth',2);
 axis([4e-7 1e-2 0.95 1.6]);
+nanmean(Dbfit)
 %end     
 %save repfit_38c15mm_cut1.005.mat DelayTime signal Curvefitg2avg
