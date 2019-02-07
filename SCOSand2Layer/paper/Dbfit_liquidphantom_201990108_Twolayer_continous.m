@@ -1,55 +1,55 @@
-close all
-clear all
-
-addpath('..\..\functions');
-addpath('..\..\multilayer');
-load gauss_lag_5000.mat
-
+function [meanDbfit, meanbetafit, meanbetastdfit] = Dbfit_liquidphantom_201990108_Twolayer(SD_dist, id1, id2, plotfits)
+if (~exist('plotfits'))
+    plotfits = true;
+end
+if (~exist('SD_dist'))
+    SD_dist = 10;
+end
 %ext='';
 %time=[1 2 3 4 5 6 7];% 12 13];
 %ratID = 'rat5';
-plotfits=1;%If you want to display how well your fit compares to your raw g2 data
+addpath('../../functions');
 plotfigs=1;
 fixbeta=0;%doesnt work yet in this code, must = 0
 good_start = 2;
-%Data directory
 
+colors = 'rgbmk';
+
+%Data directory
 fdir = './';
-id = 'TwoLayer_discard5_';
 
 % SD distance
-SD_dist = 10;%mm
-used_ch = 2;%Only looking at DCS data from detector 2
 
-mua = 0.1287;%cm-1
-musp = 6.7790;%cm-1
+Rho = [5, 10, 15, 20];
+used_ch = find(Rho == SD_dist);%Only looking at DCS data from detector 2
+
+mua = 0.1302;%cm-1
+musp =6.7607;%cm-1
 
 %Define time points, tau, for g2 curves, FIXED TAU IN LABVIEW in Aug 2015!!!!  From sample.cpp code from jixiang to my gmail  on 3/18/15
 first_delay=2e-7;
 for I=1:16,
     DelayTime(I) = I*first_delay;
 end
+
 for J=1:30,
     for I=0:7,
         DelayTime(I+(J-1)*8+17) = DelayTime((J-1)*8+16+I)+first_delay*(2^J);
     end
 end
-DelayTime=DelayTime(1:256);
 
+DelayTime=DelayTime(1:256);
 %Determine bin width for each tau
 T=zeros(size(DelayTime));
 for indt=1:length(T)-1
     T(indt)=DelayTime(indt+1)-DelayTime(indt);
 end
 
+
+
 %PARAMETERS SPECIFIC TO THIS EXPERIMENT
 %Define integration time (sec)
 t=1;
-
-%top layer
-mua1=0.1287; mus1=6.7790;
-%bottom layer
-mua2= 0.1391; mus2= 6.3814;
 
 % Convert to values in mm-1
 mua = mua/10;
@@ -60,29 +60,28 @@ guess = [1e-7 0.5];
 lb=[1e-10 0.3];
 ub=[1e-3 0.55];
 %Only fit g2 values above cutoff:
-cutoff=1.01;  %default = 1.05
-datalength=80;
+cutoff=1.05;  %default = 1.05
+datalength=70;
 %How many points to average in each curve for
 %smoothing
 avgnum=10;
-cutoff_I=10;%kHz
+cutoff_I=30;%kHz
 cutoffCOV=20;%require COV to be less than cutoff
-n0=1.45;%index of refraction for tissue
+
+n0=1.38;%index of refraction for 50-50 glycerol
+
 lambda=850*1e-6;%wavelength in mm
 k0=2*pi*n0/lambda; %this is the k0 for flow!
 R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
-%TwoLayer_discard5_1_flow_0
 meanbeta=0.4;
 temp = 50:-2:30;
 %for temp_idx = 1:11;
-
 for II = 1:5
-    maxfiles = 6;
+    maxfiles = 5;
     %Load DCS data
     for i=1:maxfiles
-        currentFile = [fdir id num2str(II) '_flow_' num2str(i-1) '.dat'];
-        if exist(currentFile)~=0
-            data=load(currentFile);
+        if exist([fdir id1 '_' id2 '_flow_' num2str(i-1) '.dat'])~=0
+            data=load([fdir id1 '_' id2 '_flow_' num2str(i-1) '.dat']);
             corrset_intensity(i,:)=data(1,2:9);
             corrset(i,:,:)=data(2:end-1,2:9);%(file number x # taus x #dets)
         else
@@ -94,28 +93,33 @@ for II = 1:5
     
     n_time_points = size( corrset,1);
     n_channels = size( corrset,2);
+    
     tau = DelayTime(good_start:end);
     
     %Change g2 data to be 4x5x256 instead of
     %11x256x4, (4 detectors, 5 frames of g2 data, 272 time points for
     %g2)
     corr = permute(corrset(1:maxfiles,:,1:8),[3 1 2]);
+    
+    
     %For each data frame, smooth, average good dets and
     %fit for g2
     
     for i=1:size(corr,2)
+        
         %End of g2 curve should fall to 1, if not, there is light
         %leakage or movement typically
         tail_avg=mean(corr(used_ch,i,115:125),3);
         
         if  tail_avg < 1.005 && tail_avg > 0.98 && corrset_intensity(i,used_ch) > cutoff_I
+            
             signal(i,:)=squeeze(corr(used_ch,i,:));
             %Smooth g2 to determine where to fit
             signal_smooth=slidingavg(signal(i,good_start:end),avgnum);
             %Find where smoothed g2 > cutoff (defined above)
             foo = min(find(signal_smooth <= cutoff))+good_start;
             if isempty(foo) || foo < good_start
-                foo=90;%Fit first 80 points
+                foo=70;%Fit first 70 points
             end
             %Fit non-smoothed g2 using cutoff
             foo;
@@ -125,7 +129,7 @@ for II = 1:5
             
             %FIT G2 FOR CBFi and BETA
             if fixbeta
-                beta(i)=mean([1.5*corr2fit{i}(1) corr2fit{i}(2) 0.5*corr2fit{i}(3)])-1;
+                beta(i) = mean([1.5*corr2fit{i}(1) corr2fit{i}(2) 0.5*corr2fit{i}(3)])-1;
                 Dbfit(i) = fminsearchbnd(@(x) dcs_g2_Db_GT(x(1),beta(i),taustmp,corr2fit{i},SD_dist,mua,musp,1),guess(1),lb(1),ub(1));
             else
                 %THIS IS WHERE THE FIT IS DONE, LOOK AT
@@ -137,7 +141,7 @@ for II = 1:5
             end
             %Get fit g2 to test fit
             %Curvefitg2avg(II,d,:)=dcs_g2fit_GT([DbFit(II,d) beta(II,d)],taus,SD_dist(d),mua,musp,k0,1);
-            Curvefitg2avg(i,:)=dcs_g2fit_GT([Dbfit(i)*1 beta(i)],DelayTime,SD_dist,mua,musp,k0,R,1);
+            Curvefitg2avg(i,:)=dcs_g2fit_GT([Dbfit(i) beta(i)],DelayTime,SD_dist,mua,musp,k0,R,1);
         else
             beta(i)=NaN;
             Dbfit(i)=NaN;
@@ -199,21 +203,25 @@ for II = 1:5
         Dbfit(:)=NaN;
         throwout=1;
     end
+    allcorrset(i,:,:,:) = corrset;
     
     
-    mean_fit(II) = nanmean(Dbfit)*1e6; % unit 10^-8 cm2/s
-    beta_fit(II) = nanmean(beta);
-    stdev_fit(II) = nanstd(Dbfit);
-    stdev_beta_fit(II) = nanstd(Dbfit);
-    Allcorrset(II,:,:,:) = corrset;
-    if II < 3
-        clear beta Dbfit Curvefitg2avg signal_alldets signal corr2fit sigma corrset corrset_intensity corrset_times
-    end
     %close all
 end
-theoretical = nanmean(beta_fit).*Copy_of_getG1(n0, R, mua1, mus1, 0.22e-8, DelayTime, lambda*1e6, SD_dist/10, 0, 1.0, mua2, mus2, .66e-8, gl).^2 + 1;
-figure, semilogx(DelayTime,signal(5,:),'k-','LineWidth',1);hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),'k--','LineWidth',2);hold on, semilogx(DelayTime(1:100), theoretical(1:100), 'ko', 'LineWidth', 2);
+%theoretical = getG1()
+color = colors(used_ch);
+c1 = strcat(color, '-');
+c2 = strcat(color, '--');
+c3 = strcat(color, 'o');
+d1 = strcat('data at SD-  ', num2str(SD_dist/10), ' cm');
+d2 = strcat('semi-inf fit at SD-  ', num2str(SD_dist/10), ' cm');
+d3 = strcat('2-layer fit at SD-  ', num2str(SD_dist/10), ' cm');
+
+semilogx(DelayTime,signal(5,:),c1,'LineWidth',1,'DisplayName',d1);
+hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),c2,'LineWidth',2,'DisplayName',d2);
+%hold on, semilogx(DelayTime(range), theoretical(rangel), c3);
+legend
 axis([4e-7 1e-2 0.95 1.6]);
+nanmean(Dbfit)
 %end
 %save repfit_38c15mm_cut1.005.mat DelayTime signal Curvefitg2avg
-nanMeanDb1 = nanmean(mean_fit)

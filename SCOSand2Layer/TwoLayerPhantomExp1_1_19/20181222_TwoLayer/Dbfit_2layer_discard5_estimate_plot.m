@@ -1,15 +1,20 @@
 close all
 clear all
+SD_dists = [10 15 20]
+used_channels = [2 3 4]
+colors = ['r', 'g', 'b']
+for sd = 1:3
 
 addpath('..\..\functions');
 addpath('..\..\multilayer');
+load gauss_lag_5000.mat
 
 %ext='';
 %time=[1 2 3 4 5 6 7];% 12 13];
 %ratID = 'rat5';
-plotfits=1;%If you want to display how well your fit compares to your raw g2 data
-plotfigs=1;
-fixbeta=0;%doesnt work yet in this code, must = 0
+plotfits = false;%If you want to display how well your fit compares to your raw g2 data
+plotfigs = 1;
+fixbeta = 0;%doesnt work yet in this code, must = 0
 good_start = 2;
 %Data directory
 
@@ -17,8 +22,8 @@ fdir = './';
 id = 'TwoLayer_discard5_';
 
 % SD distance
-SD_dist = 10;%mm
-used_ch = 2;%Only looking at DCS data from detector 2
+SD_dist = SD_dists(sd);%mm
+used_ch = used_channels(sd);%Only looking at DCS data from detector 2
 
 mua = 0.1287;%cm-1
 musp = 6.7790;%cm-1
@@ -45,6 +50,11 @@ end
 %Define integration time (sec)
 t=1;
 
+%top layer
+mua1=0.1287; mus1=6.7790;
+%bottom layer
+mua2= 0.1391; mus2= 6.3814;
+
 % Convert to values in mm-1
 mua = mua/10;
 musp = musp/10;
@@ -61,9 +71,12 @@ datalength=80;
 avgnum=10;
 cutoff_I=10;%kHz
 cutoffCOV=20;%require COV to be less than cutoff
+
 n0=1.38;%index of refraction for tissue
+
 lambda=852*1e-6;%wavelength in mm
 k0=2*pi*n0/lambda; %this is the k0 for flow!
+
 R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
 %TwoLayer_discard5_1_flow_0
 meanbeta=0.4;
@@ -205,10 +218,19 @@ for II = 1:5
     end
     %close all
 end
-figure, semilogx(DelayTime,signal(5,:),'k-','LineWidth',1);
-hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),'k--','LineWidth',2);
-hold on, semilogx(DelayTime, sque
+theoretical = nanmean(Curvefitg2avg(:,1) - 1).*Copy_of_getG1(n0, R, mua1, mus1, 0.2595e-8, DelayTime, lambda*1e6, SD_dist/10, 0, 1.0, mua2, mus2, 0.68e-8).^2 + 1;
+range = 1:100;
+tau = DelayTime(range);
+color = colors(sd);
+lineSpec1= strcat(color);
+lineSpec2= strcat(color, '--');
+lineSpec3 = strcat(color, 'o');
+meanSignal = nanmean(signal);
+meanfit = nanmean(squeeze(Curvefitg2avg(:,:)));
+semilogx(tau(range),meanSignal(range),lineSpec1,tau,meanfit(range),lineSpec2, tau(range), theoretical(range), lineSpec3);
+hold on;
 axis([4e-7 1e-2 0.95 1.6]);
 %end
 %save repfit_38c15mm_cut1.005.mat DelayTime signal Curvefitg2avg
 nanMeanDb1 = nanmean(mean_fit)
+end
