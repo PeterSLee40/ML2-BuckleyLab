@@ -8,7 +8,7 @@ load gauss_lag_5000.mat
 %ext='';
 %time=[1 2 3 4 5 6 7];% 12 13];
 %ratID = 'rat5';
-plotfits=1;%If you want to display how well your fit compares to your raw g2 data
+plotfits=0;%If you want to display how well your fit compares to your raw g2 data
 plotfigs=1;
 fixbeta=0;%doesnt work yet in this code, must = 0
 good_start = 2;
@@ -46,11 +46,6 @@ end
 %Define integration time (sec)
 t=1;
 
-%top layer
-mua1=0.1287; mus1=6.7790;
-%bottom layer
-mua2= 0.1391; mus2= 6.3814;
-
 % Convert to values in mm-1
 mua = mua/10;
 musp = musp/10;
@@ -67,7 +62,11 @@ datalength=80;
 avgnum=10;
 cutoff_I=10;%kHz
 cutoffCOV=20;%require COV to be less than cutoff
-n0=1.45;%index of refraction for tissue
+
+
+n0=1.48;%index of refraction for tissue
+
+
 lambda=850*1e-6;%wavelength in mm
 k0=2*pi*n0/lambda; %this is the k0 for flow!
 R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
@@ -211,8 +210,11 @@ for II = 1:5
     end
     %close all
 end
-theoretical = nanmean(beta_fit).*Copy_of_getG1(n0, R, mua1, mus1, 0.22e-8, DelayTime, lambda*1e6, SD_dist/10, 0, 1.0, mua2, mus2, .66e-8, gl).^2 + 1;
-figure, semilogx(DelayTime,signal(5,:),'k-','LineWidth',1);hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),'k--','LineWidth',2);hold on, semilogx(DelayTime(1:100), theoretical(1:100), 'ko', 'LineWidth', 2);
+theoretical2layer = nanmean(beta_fit).*getG1(n0, R, mua*10, musp*10, .21e-8, DelayTime, lambda*1e6, SD_dist/10, 0, 1.0, mua*10, musp*10, .67e-8,gl).^2 + 1;
+figure, semilogx(DelayTime,nanmean(signal, 1),'k-','LineWidth',1);
+hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),'k--','LineWidth',2);
+hold on, semilogx(DelayTime(1:100), theoretical2layer(1:100), 'ko', 'LineWidth', 1);
+%hold on, semilogx(DelayTime, theoretical, 'k---', 'LineWidth', 3);
 axis([4e-7 1e-2 0.95 1.6]);
 %end
 %save repfit_38c15mm_cut1.005.mat DelayTime signal Curvefitg2avg
