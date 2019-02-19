@@ -7,15 +7,15 @@ addpath('Y:\buckley-lab\Projects\2layer\functions');
 %time=[1 2 3 4 5 6 7];% 12 13];
 %ratID = 'rat5';
 
-plotfits=1;%If you want to display how well your fit compares to your raw g2 data
-plotfigs=1;
+plotfits=0;%If you want to display how well your fit compares to your raw g2 data
+plotfigs=0;
 fixbeta=0;%doesnt work yet in this code, must = 0
 good_start = 2;
 
 %Data directory
 fdir = char(pwd + "/");
 
-id = '15';
+id = '10';
 
 
 % SD distance
@@ -66,7 +66,7 @@ datalength=70;
 avgnum=10;
 cutoff_I=30;%kHz
 cutoffCOV=20;%require COV to be less than cutoff
-n0=1.33;%index of refraction for tissue
+n0=1.38;%index of refraction for tissue
 lambda=850*1e-6;%wavelength in mm
 k0=2*pi*n0/lambda; %this is the k0 for flow!
 R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
@@ -193,7 +193,7 @@ temp = 50:-2:30;
             %maxwindows(gcf)
             set(gcf,'PaperPositionMode','Auto')
 %            saveas(gcf,[ fdir 'savedfigs/' id '_' num2str(II) '.jpg'],'jpg')
-            pause(1.0);
+            pause(.1);
         end
         
         if ~isempty(ind_outs)

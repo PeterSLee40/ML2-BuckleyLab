@@ -5,19 +5,19 @@ clear all
 %time=[1 2 3 4 5 6 7];% 12 13];
 %ratID = 'rat5';
 
-plotfits=1;%If you want to display how well your fit compares to your raw g2 data
-plotfigs=1;
+plotfits=0;%If you want to display how well your fit compares to your raw g2 data
+plotfigs=0;
 fixbeta=0;%doesnt work yet in this code, must = 0
 good_start = 2;
 
 %Data directory
 fdir = char(pwd + "/");
 
-id = '15';
+id = '20';
 
 
 % SD distance
-SD_dist = 15;%mm 
+SD_dist = str2num(id);%mm 
 used_ch = 5;%Only looking at DCS data from detector 2
 
 mua = 0.1123;%cm-1
@@ -218,7 +218,7 @@ temp = 50:-2:30;
         end 
         %close all
     end
-
+nanmean(mean_fit)
     
 figure, semilogx(DelayTime,signal(5,:),'k-','LineWidth',1);
 hold on, semilogx(DelayTime,squeeze(Curvefitg2avg(5,:)),'k--','LineWidth',2);
