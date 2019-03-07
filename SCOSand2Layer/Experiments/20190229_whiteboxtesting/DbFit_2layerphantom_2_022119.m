@@ -2,7 +2,7 @@
 %see labnote book on why I chose some of these parameters
 
 addpath('../../functions')
-clear all
+%clear all
 close all
 
 plotfit = 1;
@@ -14,11 +14,11 @@ exten='_1';
 
 fdir = [ ];
 
-usedflowdets=[5 6 7 8];%must be consecutive, cannot be ex. 1,3,4 or 2,4.  must change code if this is the case
-SD_dist=[10 15 20 25];%mm
+usedflowdets=[5 6 7 8];     %must be consecutive, cannot be ex. 1,3,4 or 2,4.  must change code if this is the case
+SD_dist=[10 15 20 25];      %mm
 collectedo2=0;%Was oxygenation data collected in this study?  If so, will use changes in mua in our Dbfit
 
-n0=1.4;%index of refraction for tissue
+n0=1.33;%index of refraction for tissue
 nout=1;%index of refraction for air
 n=n0./nout;
 c=2.99792458e11; %speed of light in vacuum,mm/s
@@ -51,7 +51,7 @@ lb=[1e-12 betafitmin];
 ub=[1e-3 betafitmax];
 
 %Find all data in this fold
-file_list = dir([ fdir  '*white_3*flow*.dat']);
+file_list = dir([ fdir  '*phantom*flow*.dat']);
 num_files=length(file_list);
 meas_number = 1;
 
@@ -214,12 +214,17 @@ for II=1:size(corr,1)
     
 end
 
-nanmean(Dbfit) 
+meandbfit = nanmean(Dbfit) 
+meanbetafit = nanmean(beta);
 
 for d = 1:length(usedflowdets)
-    meang2(d,:) = nanmean(corr(:,usedflowdets(d),:),1);
+    %scrubs zero rows from corrset.
+    corrScrubbed = squeeze(corr(all(corr(:,usedflowdets(d),1:100), 3), usedflowdets(d), :));
+    meang2(d,:) = nanmean(squeeze(corravg(:, d, :)));
+    meanfitg2(d,:)=dcs_g2fit_GT([meandbfit(d) meanbetafit(d)],taus, SD_dist(d),muao,muspo,k0,R,1);
 end
-figure,semilogx(taus,meang2)
+figure,semilogx(taus,meang2); hold on;
+semilogx(taus,meanfitg2)
 ylim([0.9 1.6])
 xlim([min(taus) 1e-2])
 save('meandata.mat','meang2','taus')

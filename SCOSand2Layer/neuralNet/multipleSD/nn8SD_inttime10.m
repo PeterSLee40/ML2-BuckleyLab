@@ -1,7 +1,7 @@
 clc
 tic
-addpath('C:\Users\PeterLee\Documents\GitHub\SCOSand2Layer\functions');
-addpath('C:\Users\PeterLee\Documents\GitHub\SCOSand2Layer\multilayer');
+addpath('..\..\functions');
+addpath('..\..\multilayer');
 constants
 
 %MSE = 4.8;
@@ -18,9 +18,10 @@ T = diff(DelayTime(1:1:81));
 %T = 2e-7.*ones(1,size(tau,2));
 repnumber = 0;
 %the optimal rho after running buildnnBFRrhoselecteff.m with inttime of 10.
-rho = [.5, 1.0, 1.0, 1.50, 1.50, 1.50, 2.0, 2.0];
+rho = [.5, 1.0, 1.0, 1.50, 1.50, 1.50, 2.0, 2.0]*10;
 %rho = 
-Db1 = 7.00e-9:.1e-9:8.00e-9;
+%Db1 = 8.00e-9:.1e-9:9.00e-9;
+Db1 = 1e-9
 %Ratio = 3:.1:10;
 Ratio = 2:.1:10;
 ell = 0.95:.01:1.05;
@@ -47,6 +48,8 @@ target = single(zeros(siz,3));
 inputshuffle = input;
 targetshuffle = target;
 load gauss_lag_5000.mat
+w = 1
+n = 1.33
 for db1 = Db1s
     repnumber = repnumber+1
     tic
@@ -57,7 +60,7 @@ for db1 = Db1s
             for i = 1:numDetectors
                 currRho = rho(i);
                 currInt = getIntensity(currRho,20);
-                [g1s(i,:), gamma] = getG1(n,Reff,mua1,mus1,db1,tau,lambda,currRho,w,l,mua2,mus2,db2,gl);
+                [g1s(i,:), gamma, p] = getG1(n,Reff,mua1,mus1,db1,tau,lambda,currRho,w,l,mua2,mus2,db2,gl);
                 sigmas(i,:) = getDCSNoise(currInt,T,inttime,beta,gamma,tau);
             end
             for rep = 1:Rep
