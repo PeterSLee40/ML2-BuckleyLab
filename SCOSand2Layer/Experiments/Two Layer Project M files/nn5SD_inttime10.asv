@@ -23,7 +23,7 @@ Betas = 1;
 taustmp = tau;
 Rhos = [1.0, 1.5, 2.0, 2.5];
 T = T(taurange);
-numDetectors = size(Rhos,2);
+numDetectors = 5;
 g1s = zeros(numDetectors, size(taustmp,2));
 g2s = g1s;  g2s_noise = g1s;
 sigmas = zeros(numDetectors, size(tau,2));

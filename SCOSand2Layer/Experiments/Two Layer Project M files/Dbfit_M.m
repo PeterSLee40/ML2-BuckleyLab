@@ -1,5 +1,5 @@
-close all
-clear all
+%close all
+%clear all
 addpath('..\..\functions');
 
 %ext='';
@@ -20,6 +20,7 @@ id = '20';
 % SD distance
 SD_dist = 20;%mm 
 used_ch = 1;%Only looking at DCS data from detector 2
+
 
 mua = 0.125;%cm-1
 musp = 4.8;%cm-1
