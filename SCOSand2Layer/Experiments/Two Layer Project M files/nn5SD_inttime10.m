@@ -4,11 +4,19 @@ addpath('..\..\multilayer');
 
 taurange = 5:85;
 constants
-Db1s = [1e-8]
+Db1s = [.80*1.1e-08: .01*1.1e-08: 1.1*1.1e-08];
 constants
 tau = DelayTime(taurange);
-Ratio = 2:.1:10;
-ell = 0.90:.01:1.10;
+Ratio = 2:.05:10;
+ell = 1.0: .05: 2.0;
+
+%Layer 1(Skull/Scalp): mu_a : 0.19 cm-1 mu_sp: 8.58 cm-1
+mua1 = 0.19; mus1 = 8.58;
+%Layer 2(Brain): mu_a:0.2 cm-1  mu_sp:  9.9 cm-1
+mua2= 0.2; mus2= 9.9;
+
+n = 1.37;
+lambda=850;%wavelength in mm
 
 Rep = 1;
 Betas = 1;
@@ -25,12 +33,9 @@ inputshuffle = input;   %inputnn =  input;
 targetshuffle = target;
 load gauss_lag_5000.mat
 inttime = 10;
-%top layer
-mua1=0.125; mus1=8;
-%bottom layer
-mua2= 0.125; mus2= 8;
 meanBeta = .5;
 j = 0;
+
 
 Rhos = [1.0, 1.5, 2.0, 2.2, 2.7];
 
@@ -66,7 +71,7 @@ for db1 = Db1s*1e-2
                 end
             end
         end
-        endcf
+    end
     toc
 end
 

@@ -42,8 +42,11 @@ for indt=1:length(T)-1
     T(indt)=DelayTime(indt+1)-DelayTime(indt);
 end
 
-
-
+%Layer 1(Skull/Scalp): mu_a : 0.19 cm-1 mu_sp: 8.58 cm-1
+%Layer 2(Brain): mu_a:0.2 cm-1  mu_sp:  9.9 cm-1
+%n=1.37
+mua = .19;
+musp = 
 %PARAMETERS SPECIFIC TO THIS EXPERIMENT
 %Define integration time (sec)
 t=1;
@@ -64,14 +67,16 @@ datalength=70;
 avgnum=10;
 cutoff_I=30;%kHz
 cutoffCOV=20;%require COV to be less than cutoff
-n0=1.33;%index of refraction for tissue
+n0=1.37;%index of refraction for tissue
 lambda=850*1e-6;%wavelength in mm
 k0=2*pi*n0/lambda; %this is the k0 for flow!
 R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
 SD_dist = [10, 15, 20, 25]
-
+beta = .5;
 for i = 1:4
-    rho = SD_dist(i)
-    load(['mcx_g1_TwoLayerModelSimp_1det_' num2str(rho) 'mmSDS.mat']);
-    Dbfit(i) = fminsearchbnd(@(x) dcs_g2_Db_GT(x(1),beta(i),taustmp,corr2fit{i},SD_dist,mua,musp,1),guess(1),lb(1),ub(1));
+    rho = SD_dist(i);
+    data = load(['mcx_g1_TwoLayerModelSimp_1det_' num2str(rho) 'mmSDS.mat']);
+    g2 = beta*(data.gTau').^2 + 1;
+    tau = data.tauVals(5:85,:)'
+    Dbfit(i) = fminsearchbnd(@(x) dcs_g2_Db_GT(x,beta,tau, g2,rho,mua,musp,1),guess(1),lb(1),ub(1));
 end
