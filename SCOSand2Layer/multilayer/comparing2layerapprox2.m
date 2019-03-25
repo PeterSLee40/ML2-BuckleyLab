@@ -1,7 +1,7 @@
 clear all
 close all
 constants
-addpath('F:\2-Layer Neural Net\functions');
+addpath('..\functions');
 Db1 = 5e-8;
 Db2 = 5e-7;
 ell = [.8:.1:1];%

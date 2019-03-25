@@ -9,11 +9,11 @@ dbbeta = zeros(length(ell),2);
 
 n = 1.37;
 Reff = .493;
-mua1 = .1414; % cm-1
-mus1 = 8.9; % cm-1
+%Layer 1(Skull/Scalp): mu_a : 0.19 cm-1 mu_sp: 8.58 cm-1
+mua1 = 0.19; mus1 = 8.58;
+%Layer 2(Brain): mu_a:0.2 cm-1  mu_sp:  9.9 cm-1
+mua2= 0.2; mus2= 9.9;
 w = 0;
-mua2 = .20;% cm-1
-mus2 = 9.0;% cm-1
 Rep = 1;
 dbbetasum = zeros(size(Rep,2),1);
 T = T(1:1:100);

@@ -2,19 +2,19 @@
 addpath('..\..\functions');
 addpath('..\..\multilayer');
 
-taurange = 5:105;
+taurange = 5:95;
 constants
-Db1s = [1e-8]
+Db1s = [.93*1e-8:.01*1e-8:1e-8]
 constants
 tau = DelayTime(taurange);
 Ratio = 2:.1:10;
-ell = 0.90:.01:1.10;
-
+ell = 0.60:.01:1.20;
+Rhos = [1.0, 1.5, 2.0, 2.5];
+numDetectors = size(Rhos,2);
 Rep = 1;
 Betas = 1;
 taustmp = tau;
 T = T(taurange);
-numDetectors = 5;
 g1s = zeros(numDetectors, size(taustmp,2));
 g2s = g1s;  g2s_noise = g1s;
 sigmas = zeros(numDetectors, size(tau,2));
@@ -32,7 +32,7 @@ mua2= 0.125; mus2= 8;
 meanBeta = .5;
 j = 0;
 
-Rhos = [1.0, 1.5, 2.0, 2.2, 2.7];
+
 
 repnumber = 0;
 for db1 = Db1s*1e-2
@@ -54,19 +54,19 @@ for db1 = Db1s*1e-2
                 for beta = 1:Betas,    j = j + 1;
                     %betaRand = meanBeta.*(randn(1).*meanbetastdfit.*2+1);
                     betaRand = meanBeta;
-                    intensities = [300 ,200, 50, 40, 20].*1e3;
+                    intensities = [300 ,200, 50, 30].*1e3;
                     sigmas = getDCSNoise(intensities,T,inttime,betaRand,gamma,tau);
                     noises = sigmas.*randn(numDetectors, size(tau,2));
                     %betasRand = repmat(betaRand',1,size(tau,2));
                     g2s = betaRand'.*g1s.^2 + 1;
-                    g2s_noise = g2s;
+                    g2s_noise = g2s + noises;
                     input(j,:) = (g2s_noise(:)');
                     %inputnn(j,:) = (g2s(:)');
                     target(j,:) = ([db1*1e8 db2*1e9 l]);
                 end
             end
         end
-        endcf
+    end
     toc
 end
 
@@ -78,7 +78,7 @@ targetshuffledb1 = inputtarget(:, size(input,2) + 1);
 targetshuffledb2 = (inputtarget(:, size(input,2) + 2));
 targetshuffleell = inputtarget(:, size(input,2) + 3);
 Nets = [];
-netArch = {[15,5]};
+netArch = {[10]};
 [trainInd,valInd,testInd] = dividerand(size(inputshuffle, 1));
 
 for retrainingIteration = 1:size(netArch,2)

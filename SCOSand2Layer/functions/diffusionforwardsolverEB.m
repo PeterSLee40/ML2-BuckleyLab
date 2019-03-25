@@ -104,3 +104,4 @@ end
 %If phi is complex, I will break it up into amplitude and phase.
 amp = abs(phi);
 phase = -angle(phi);
+
