@@ -1,6 +1,6 @@
-close all
+%close all
 %clear all
-addpath('..\..\..\functions');
+addpath('..\..\functions');
 constants
 load gauss_lag_5000.mat
 
@@ -60,9 +60,9 @@ t=1;
 mua = mua/10;
 musp = musp/10;
 %Initial guess for our g2 fit, [Db beta]
-guess = [1e-6 0.5];
+guess = [1e-7 0.49];
 %Upper and lower bounds for fit [Db beta]
-lb=[1e-10 0.5];
+lb=[1e-10 0.45];
 ub=[1e-3 0.5];
 %Only fit g2 values above cutoff:
 cutoff=1.05;  %default = 1.05
@@ -78,7 +78,7 @@ k0=2*pi*n0/lambda; %this is the k0 for flow!
 R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
 SD_dist = [10, 15, 20, 25, 30, 40]
 beta = .5;
-taurange = 1:80;
+taurange = 1:90;
 l = 1.5;
 
 for i = 1:size(SD_dist,2)
@@ -94,17 +94,12 @@ for i = 1:size(SD_dist,2)
     asd = dcs_g2fit_GT([db1 .5],tau,rho,mua,musp,k0,R,1);
     df = getG1(n0,R,mua1,mus1,db1,tau,850e0,rho,w,l,mua2,mus2,db1, gl);
 end
-%19.5709
+
+
 g2slinearized = g2s(:)'
 %prediction = net21(g2slinearized');
-%semilogx(tau, g1.^2); hold on; semilogx(tau, df.^2);hold on; semilogx(tau, 2*(asd-1));
-db1 = 1.0784e-8;
+semilogx(tau, g1.^2); hold on; semilogx(tau, df.^2);hold on; semilogx(tau, 2*(asd-1));
+db1 = 1e-7;
 asd = dcs_g2fit_GT([db1 .5],tau,rho,mua,musp,k0,R,1);
-df = squeeze(getG1(n0,R,mua1,mus1,db1,tau,850e0,SD_dist'/10,w,l,mua2,mus2,1.0519e-7, gl));
-%hold on; semilogx(tau, df.^2);hold on; semilogx(tau, 2*(asd-1));
-g2fit = df.^2*.5 + 1;
-semilogx(tau, g2s'); hold on; semilogx(tau,g2fit);
-guess = db1;
-lb = 1e-10
-ub = 1e-1;
-fun = fminsearchbnd(@(x) norm(df - squeeze(getG1(n0,R,mua1,mus1,db1,tau,850e0,SD_dist'/10,w,l,mua2,mus2, x, gl))).^2, guess,lb,ub);
+df = getG1(n0,R,mua1,mus1,db1,tau,850e0,rho,w,l,mua1,mus1,db1, gl);
+hold on; semilogx(tau, df.^2);hold on; semilogx(tau, 2*(asd-1));

@@ -5,7 +5,7 @@ addpath('..\..\neuralNet\Plotting');
 constants
 
 taurange = 1:1:90;
-db1prediction = 1.125e-08;
+db1prediction = 1.15e-08;
 Db1s = [.97*db1prediction: .005*db1prediction: 1.01*db1prediction];
 tau = DelayTime(taurange);
 Ratio = 1.5:.05:10.5;

@@ -25,8 +25,6 @@ y.columns = [str(y) for y in range(1,ysize+1)]
 model = Sequential()
 model.add(Dense(Xsize, input_dim=Xsize, activation='relu'))
 model.add(Dense(10, activation='relu'))
-model.add(Dense(5, activation='relu'))
-model.add(Dense(10, activation='relu'))
 model.add(Dense(ysize, activation='linear'))
 model.compile(loss='mse', optimizer='Adamax')
 print("now fitting...")

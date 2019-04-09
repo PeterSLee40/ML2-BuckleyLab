@@ -1,0 +1,131 @@
+BOXY.EXE: ISS Imagent Data Acquisition Program Version 0.82
+Ascii Record File
+
+#ACQ INFORMATION
+1  Detector Channels 
+16  External MUX Channels 
+4  Auxiliary Analog Channels 
+5000  Waveform (CCF) Frequency (Hz)
+4  Waveforms Skipped 
+26  Waveforms Averaged 
+1  Cycles Averaged 
+8  Acquisitions per Waveform 
+1  Auxiliary Digital Channels 
+
+#Data Update Rate
+10.4167  Update Rate (Hz) 
+FALSE -- Use Phase Reference
+FALSE -- Use Continuous Phase Reference
+FALSE -- Use Intensity Reference
+FALSE -- Use Continuous Intensity Reference
+
+#FILE INFORMATION
+TRUE -- External MUX Channel results are PARSED.
+FALSE -- AC DC and Phase are NOT grouped.
+TRUE -- Companion Program Settings File CREATED.
+FALSE -- AC data not excluded
+FALSE -- DC data not excluded
+FALSE -- Phase data not excluded
+FALSE -- Auxillary Chn. data not excluded
+Tab delimiters
+
+#CALIBRATION STATE
+TRUE -- Waveform Calibration Values APPLIED.
+
+#WAVELENGTH DATA
+Wavelength Index	Wavelength	Comp1 ExtCoef	Comp2 ExtCoef	Comp3 ExtCoef	Comp4 ExtCoef	BackGround	Weight	
+
+1	6.600e+02	1.486e+00	3.844e+00	1.000e+00	1.000e+00	1.890e-02	1.000e+00	
+2	6.900e+02	2.315e+00	1.792e+00	1.000e+00	1.000e+00	2.180e-02	1.000e+00	
+3	7.500e+02	1.000e+00	1.000e+00	1.000e+00	1.000e+00	3.010e-03	1.000e+00	
+4	7.750e+02	1.000e+00	1.000e+00	1.000e+00	1.000e+00	3.240e-03	1.000e+00	
+5	7.850e+02	1.000e+00	1.000e+00	1.000e+00	1.000e+00	1.660e-02	1.000e+00	
+6	8.000e+02	1.000e+00	1.000e+00	1.000e+00	1.000e+00	1.480e-02	1.000e+00	
+7	8.250e+02	1.000e+00	1.000e+00	1.000e+00	1.000e+00	1.620e-02	1.000e+00	
+8	8.300e+02	1.000e+00	1.000e+00	1.000e+00	1.000e+00	2.620e-02	1.000e+00	
+
+
+#AUX CALIBRATION VALUES
+Val Type	aux-1	aux-2	aux-3	aux-4	
+
+Term	0.0000e+00	0.0000e+00	0.0000e+00	0.0000e+00	
+Factor	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	
+
+
+#WF CALIBRATION VALUES
+A = Detector Channel
+Val Type	A-AC1	A-AC2	A-AC3	A-AC4	A-AC5	A-AC6	A-AC7	A-AC8	A-AC9	A-AC10	A-AC11	A-AC12	A-AC13	A-AC14	A-AC15	A-AC16	A-DC1	A-DC2	A-DC3	A-DC4	A-DC5	A-DC6	A-DC7	A-DC8	A-DC9	A-DC10	A-DC11	A-DC12	A-DC13	A-DC14	A-DC15	A-DC16	A-Ph1	A-Ph2	A-Ph3	A-Ph4	A-Ph5	A-Ph6	A-Ph7	A-Ph8	A-Ph9	A-Ph10	A-Ph11	A-Ph12	A-Ph13	A-Ph14	A-Ph15	A-Ph16	
+
+Term	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	0.00000e+00	-1.05892e+02	-9.99249e+01	-2.86485e+02	-2.62799e+02	-2.45797e+02	-2.48632e+02	-7.72400e+01	-7.86612e+01	-2.77644e+02	-2.54792e+02	-8.97378e+01	-8.62737e+01	-7.31555e+01	-7.17185e+01	-2.31456e+02	-2.32884e+02	
+Factor	3.48934e-02	2.88771e-02	2.23541e-02	4.58344e-02	3.11822e-02	3.92311e-02	3.80806e-02	2.80088e-02	9.14315e-03	3.04153e-02	1.15516e-02	1.06359e-02	2.48777e-02	2.73485e-02	2.20125e-02	3.07402e-02	4.70955e+01	8.07534e+01	3.66973e+01	1.04434e+02	6.45565e+01	3.94082e+01	9.13796e+01	5.49806e+01	7.76760e+00	3.02569e+01	7.94893e+00	1.01663e+01	1.79934e+01	1.65225e+01	1.35945e+01	1.69417e+01	X	X	X	X	X	X	X	X	X	X	X	X	X	X	X	X	
+
+
+
+#DISTANCE SETTINGS
+A = Detector Channel
+A-1	A-2	A-3	A-4	A-5	A-6	A-7	A-8	A-9	A-10	A-11	A-12	A-13	A-14	A-15	A-16	
+
+1.5000e+00	1.5000e+00	1.5000e+00	1.5000e+00	1.5000e+00	1.5000e+00	1.5000e+00	1.5000e+00	2.0000e+00	2.0000e+00	2.0000e+00	2.0000e+00	2.0000e+00	2.0000e+00	2.0000e+00	2.0000e+00	
+
+
+
+#ADDITIONAL SIGNAL INFORMATION
+A = Detector Channel
+Info. Type	A-1	A-2	A-3	A-4	A-5	A-6	A-7	A-8	A-9	A-10	A-11	A-12	A-13	A-14	A-15	A-16	
+
+cal. block. ind.	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	1	
+wavelength ind.	0	1	2	3	4	5	6	7	0	1	2	3	4	5	6	7	
+weight	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	1.0000e+00	
+
+
+#CALIBRATION BLOCK OPTICAL PROPS
+Calib. Block Num.	WaveLen Index	Absorption	Scattering	
+
+1	1	1.080e-01	9.000e+00	
+1	2	1.300e-01	1.070e+01	
+1	3	1.130e-01	9.400e+00	
+1	4	1.210e-01	1.000e+01	
+1	5	1.080e-01	9.000e+00	
+1	6	1.300e-01	1.070e+01	
+1	7	1.150e-01	9.600e+00	
+1	8	1.330e-01	1.090e+01	
+
+Calib. Block Num.	WaveLen Index	Absorption	Scattering	
+
+2	1	1.120e-01	4.400e+00	
+2	2	1.200e-01	5.700e+00	
+2	3	1.140e-01	4.600e+00	
+2	4	1.160e-01	5.100e+00	
+2	5	1.120e-01	4.400e+00	
+2	6	1.200e-01	5.700e+00	
+2	7	1.150e-01	4.800e+00	
+2	8	1.210e-01	6.000e+00	
+
+Calib. Block Num.	WaveLen Index	Absorption	Scattering	
+
+3	1	9.300e-02	8.700e+00	
+3	2	1.010e-01	1.040e+01	
+3	3	9.500e-02	9.000e+00	
+3	4	9.700e-02	9.600e+00	
+3	5	9.300e-02	8.700e+00	
+3	6	1.010e-01	1.040e+01	
+3	7	9.600e-02	9.300e+00	
+3	8	1.030e-01	1.080e+01	
+
+Calib. Block Num.	WaveLen Index	Absorption	Scattering	
+
+4	1	1.000e-01	1.000e+01	
+4	2	1.000e-01	1.000e+01	
+4	3	1.000e-01	1.000e+01	
+4	4	1.000e-01	1.000e+01	
+4	5	1.000e-01	1.000e+01	
+4	6	1.000e-01	1.000e+01	
+4	7	1.000e-01	1.000e+01	
+4	8	1.000e-01	1.000e+01	
+
+
+
+#DATA BEGINS
+time	group	step	mark	flag	A-AC1	A-AC2	A-AC3	A-AC4	A-AC5	A-AC6	A-AC7	A-AC8	A-AC9	A-AC10	A-AC11	A-AC12	A-AC13	A-AC14	A-AC15	A-AC16	A-DC1	A-DC2	A-DC3	A-DC4	A-DC5	A-DC6	A-DC7	A-DC8	A-DC9	A-DC10	A-DC11	A-DC12	A-DC13	A-DC14	A-DC15	A-DC16	A-Ph1	A-Ph2	A-Ph3	A-Ph4	A-Ph5	A-Ph6	A-Ph7	A-Ph8	A-Ph9	A-Ph10	A-Ph11	A-Ph12	A-Ph13	A-Ph14	A-Ph15	A-Ph16	aux-1	aux-2	aux-3	aux-4	digaux	
+
+#DATA ENDS
