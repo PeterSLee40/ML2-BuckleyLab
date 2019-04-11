@@ -1,16 +1,18 @@
 
-addpath('..\..\..\functions');
-addpath('..\..\..\multilayer');
-addpath('..\..\..\neuralNet\Plotting');
+addpath('..\..\..\..\..\functions');
+addpath('..\..\..\..\..\multilayer');
+addpath('..\..\..\..\..\neuralNet\Plotting');
 constants
 
-taurange = 1:1:80;
-db1prediction = 1.125e-08;
+Dbfit_M_thinned_10_25_multiplenets
+taurange = 5:1:85;
+
+db1prediction = 8.4e-9;
 db2prediction = 10.027e-08;
-Db1s = [.95*db1prediction: .005*db1prediction: 1.01*db1prediction];
+Db1s = [.95*db1prediction: .005*db1prediction: 1.03*db1prediction];
 tau = DelayTime(taurange);
-Ratio = 1:.05:12;
-ell = .6: .02 : 1.2;
+Ratio = 1.5:.05:12;
+ell = .8: .02 : 1.2;
 
 %Layer 1(Skull/Scalp): mu_a : 0.19 cm-1 mu_sp: 8.58 cm-1
 mua1 = 0.19; mus1 = 8.58;
@@ -18,7 +20,7 @@ mua1 = 0.19; mus1 = 8.58;
 mua2= 0.2; mus2= 9.9;
 
 n = 1.37;
-lambda = 852;%wavelength in mm
+lambda = 850;%wavelength in mm
 Reff= .4930;
 
 
@@ -103,12 +105,12 @@ for retrainingIteration = 1:size(netArch,2)
     %customweights = 100./(targetshuffledb2');
     %[net1, tr] = train(net, inputshuffle', targetshuffledb2'./targetshuffledb1',{}, {}, customweights, 'useGPU', 'yes');
     [net1, tr] = train(net, inputshuffle', targetshuffledb2', 'useGPU', 'yes');
-    %testTarget = targetshuffledb2(tr.testInd);
-    %testFit = net1(inputshuffle(tr.testInd,:)');
+    testTarget = targetshuffledb2(tr.testInd);
+    testFit = net1(inputshuffle(tr.testInd,:)');
     performance = mean(abs(testTarget - testFit')./testTarget)*100;
     %archString = sprintf('%.0f,' , architecture);
     %archString = archString(1:end - 1);
-    disp(['The performance with hidden layer(s) of [' , archString, '] is an mpe of ', num2str(performance)]);
+    %disp(['The performance with hidden layer(s) of [' , archString, '] is an mpe of ', num2str(performance)]);
     Nets{retrainingIteration} = net1;
     perf{retrainingIteration} = performance;
 end
@@ -122,7 +124,11 @@ testlabel = targetshuffle(testInd,:);
 testratio = targetshuffle(testInd,1);
 testthiccness = targetshuffle(testInd,2)*1;
 
-db2estimate = net1(testset')';
+db2estimate = net1(test')';
 testError = 100*(testTarget-db2estimate)./testTarget;
 
 nnfitperformanceplotterfunc(testthiccness, testTarget, testError)
+
+for k = 1:size(Nets,2)
+   neuralnettrail(k,:) = Nets{k}(trial');
+end

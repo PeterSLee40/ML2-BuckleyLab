@@ -14,10 +14,10 @@ Dbfit_M_thinned_10_25_multiplenets
 taurange = 5:1:85;
 db1prediction = 8.9e-9;
 db2prediction = 10.027e-08;
-Db1s = [.80*db1prediction: .005*db1prediction: 1.05*db1prediction];
+Db1s = [.80*db1prediction: .01*db1prediction: 1.05*db1prediction];
 tau = DelayTime(taurange);
-Ratio = 1.5:.05:12;
-ell = .8: .02 : 1.2;
+Ratio = 1.5:.1:12;
+ell = .6: .02 : 1.2;
 %Layer 1(Skull/Scalp): mu_a : 0.19 cm-1 mu_sp: 8.58 cm-1
 mua1 = 0.19; mus1 = 8.58;
 %Layer 2(Brain): mu_a:0.2 cm-1  mu_sp:  9.9 cm-1
@@ -25,8 +25,8 @@ mua2= 0.2; mus2= 9.9;
 n = 1.37;
 lambda = 852;%wavelength in mm
 Reff= .4930;
-Rhos = [1.0, 1.5, 2.0, 2.5, 3.0];
-intensities = [30 ,30, 30, 30, 30].*1e3;
+Rhos = [1.0, 1.5, 2.0, 2.5];
+intensities = [30 ,30, 30, 30].*1e3;
 
 Rep = 1;    Betas = 1;
 T = T(taurange);
@@ -119,5 +119,5 @@ testError = 100*(testTarget-db2estimate)./testTarget;
 %Creates a plot
 nnfitperformanceplotterfunc(testthiccness, testTarget, testError)
 for k = 1:size(Nets,2)
-   neuralnettrail(k,:) = Nets{k}(trial');
+   neuralnettrail(k,:) = Nets{k}(trial(:, 1:size(Rhos,2))');
 end

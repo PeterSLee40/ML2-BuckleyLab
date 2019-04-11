@@ -5,7 +5,6 @@ constants
 load gauss_lag_5000.mat
 %load net1_10_25_100khz_2.mat
 
-
 plotfits=1;%If you want to display how well your fit compares to your raw g2 data
 plotfigs=1;
 fixbeta=0;%doesnt work yet in this code, must = 0
@@ -70,18 +69,18 @@ n0=1.37;%index of refraction for tissue
 lambda=852*1e-6;%wavelength in mm
 k0=2*pi*n0/lambda; %this is the k0 for flow!
 R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
-SD_dist = [10, 15, 20, 25];
+SD_dist = [10, 15, 20, 25, 30];
 beta = .5;
-taurange = 1:80;
+taurange = 5:85;
 l = .9;
 filename = 'mcx_g1_TwoLayerModelSimp_RightHem_1det_DB2_';
 db2real = [6, 9.5, 11.7, 4.2];
 j = 0;
-differentDbs = ["1_", "2_", "3_", "4_"]
+differentDbs = ["1_", "2_", "3_", "4_"];
 for differentDb = differentDbs
     j = j + 1;
     for i = 1:size(SD_dist,2)
-        rho = SD_dist(i);cd 
+        rho = SD_dist(i);
         data = load([filename char(differentDb) num2str(rho) 'mmSDS.mat']);
         g1 = data.gTau(taurange,:);
         g2 = beta*(g1).^2 + 1;
