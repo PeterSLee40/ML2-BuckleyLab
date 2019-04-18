@@ -3,7 +3,7 @@ function result = dcs_g2_Db_GT_sansbeta(x,beta,tau,g2,p,mu_a,mu_sp,alpha,k0,Reff
 % mu_a and mu_sp in /mm
 %p in mm
 
-Db = x(1);
+Db = x;
 
 zo = (mu_sp + mu_a)^-1; 
 zb = 2*(1+Reff)/(3*(1-Reff)*mu_sp);

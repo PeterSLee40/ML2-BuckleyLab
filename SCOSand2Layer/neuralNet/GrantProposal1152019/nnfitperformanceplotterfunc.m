@@ -33,6 +33,7 @@ xlabel Thickness
 ylabel ratio
 zlabel 'Db2 Estimation Error'
 grid on
+caxis([-20 20])
 view( -117.5, 37.0 );
 
 

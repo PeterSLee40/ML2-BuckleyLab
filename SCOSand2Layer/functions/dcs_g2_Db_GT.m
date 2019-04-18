@@ -20,4 +20,4 @@ G1_0 = exp(-Kappa0 .* r1)./r1 - exp(-Kappa0 .* r2)./r2;
 
 fit_g2 = 1 + repmat(beta,1,size(tau,2)) .* ((G1 ./ repmat(G1_0,1,size(tau,2))).^2);
 
-result = norm((g2 - fit_g2));
+result = norm((g2.^2 - fit_g2.^2));

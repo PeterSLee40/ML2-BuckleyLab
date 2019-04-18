@@ -18,8 +18,7 @@ id = '20';
 SD_dist = 20;%mm
 used_ch = 1;%Only looking at DCS data from detector 2
 
-mua = 0.125;%cm-1
-musp = 4.8;%cm-1
+mua = 0.19; mus = 8.58;
 
 %Define time points, tau, for g2 curves, FIXED TAU IN LABVIEW in Aug 2015!!!!  From sample.cpp code from jixiang to my gmail  on 3/18/15
 first_delay=2e-7;
@@ -40,9 +39,9 @@ for indt=1:length(T)-1
     T(indt)=DelayTime(indt+1)-DelayTime(indt);
 end
 
+
 mua1= .19; mus1 = 8.58;   %Layer 1(Skull/Scalp): mu_a : 0.19 cm-1 mu_sp: 8.58 cm-1
 mua2= .2; mus2= 9.9;   %Layer 2(Brain): mu_a:0.2 cm-1  mu_sp:  9.9 cm-1
-
 %n=1.37
 mua = .19;
 musp = 8.58;
@@ -54,25 +53,26 @@ t=1;
 mua = mua/10;
 musp = musp/10;
 %Initial guess for our g2 fit, [Db beta]
-guess = [1e-6 0.5];
+guess = [1e-10, .5];
 %Upper and lower bounds for fit [Db beta]
-lb=[1e-10 0.5];
-ub=[1e-3 0.5];
+lb=[1e-11, .5];
+ub=[1e-3, .5];
 %Only fit g2 values above cutoff:
-cutoff=1.05;  %default = 1.05
+cutoff=1.02;  %default = 1.05
 datalength=70;
 %How many points to average in each curve for smoothing
 avgnum=10;
 cutoff_I=30;%kHz
 cutoffCOV=20;%require COV to be less than cutoff
 n0=1.37;%index of refraction for tissue
-lambda=852*1e-6;%wavelength in mm
+lambda=852e-6;%wavelength in mm
 k0=2*pi*n0/lambda; %this is the k0 for flow!
-R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
-SD_dist = [10, 15, 20, 25, 30];
+R = .493;
+%R=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
+SD_dist = [10, 15, 20, 25];
 beta = .5;
-taurange = 5:85;
-l = .9;
+taurange = 1:70;
+l = 1.0;
 filename = 'mcx_g1_TwoLayerModelSimp_RightHem_1det_DB2_';
 db2real = [6, 9.5, 11.7, 4.2];
 j = 0;
@@ -83,17 +83,19 @@ for differentDb = differentDbs
         rho = SD_dist(i);
         data = load([filename char(differentDb) num2str(rho) 'mmSDS.mat']);
         g1 = data.gTau(taurange,:);
-        g2 = beta*(g1).^2 + 1;
-        g2s(i,:) = g2;
+        g2 = beta*(g1.^2) + 1;
+        g2ss(i,:) = g2;
         tau = data.tauVals(taurange,:)';
-        Dbbeta(i, :) = fminsearchbnd(@(x) dcs_g2_Db_GT(x,tau,g2,rho,mua,musp,1,k0,R),guess,lb,ub);
-        db1 = Dbbeta(i, 1);
+        Dbbeta(j, i, :) = fminsearchbnd(@(x) dcs_g2_Db_GT(x, tau,g2,rho,mua,musp,1,k0,R),guess,lb,ub);
+        db1 = Dbbeta(j, i, 1);
         asd = dcs_g2fit_GT([db1 .5],tau,rho,mua,musp,k0,R,1);
         df = getG1(n0,R,mua1,mus1,db1,tau,852e0,rho,w,l,mua2,mus2,db1, gl);
     end
-    g2slinearized = g2s(:);
+    g2slinearized = g2ss(:);
     trial(j,:) = g2slinearized;
+    trial10(j,:) = g2ss(1:size(SD_dist,2):size(trial,2));
 end
+semilogx(tau,dcs_g2fit_GT([db1*1.3 .5],tau,rho,mua,musp,k0,R,1)); hold on; semilogx(tau,g2);
 
 % error30 = (db2real - db2net1prediction30)./ db2real*100;
 % error100 = (db2real - db2net1prediction100)./ db2real*100;
@@ -111,15 +113,15 @@ end
 %19.5709
 %prediction = net21(g2slinearized');
 %semilogx(tau, g1.^2); hold on; semilogx(tau, df.^2);hold on; semilogx(tau, 2*(asd-1));
-db1 = 1.125e-8;
+db1 = Dbbeta(1,1)
 asd = dcs_g2fit_GT([db1 .5],tau,rho,mua,musp,k0,R,1);
 guess = db1;
 lb = 1e-10;
 ub = 1e-1;
 %l
 %fun = fminsearchbnd(@(x) norm(g2s' - squeeze(getG1(n0,R,mua1,mus1,db1,tau,852e0,SD_dist'/10,w,l,mua2,mus2, x, gl))).^2, guess,lb,ub)
-%df = squeeze(getG1(n0,R,mua1,mus1,db1,tau,852e0,SD_dist'/10,w,l,mua2,mus2,1.0519e-7, gl));
-%hold on; semilogx(tau, df.^2);hold on; semilogx(tau, 2*(asd-1));
-%g2fit = df.^2*.5 + 1;
-%semilogx(tau, g2s'); hold on; semilogx(tau,g2fit);
-
+df = squeeze(getG1(n0,R,mua1,mus1,db1,tau,852e0,SD_dist'/10,w,l,mua2,mus2,1.0519e-7, gl));
+hold on; semilogx(tau, df.^2);hold on; semilogx(tau, 2*(asd-1));
+g2fit = df.^2*.5 + 1;
+semilogx(tau, g2ss'); hold on; semilogx(tau,g2fit);
+Dbbeta(1,1)

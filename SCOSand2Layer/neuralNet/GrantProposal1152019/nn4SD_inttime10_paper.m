@@ -1,0 +1,134 @@
+
+addpath('..\..\functions');
+addpath('..\..\multilayer');
+constants
+% Parameters
+noiseToggle = 0;
+taurange = 5:85;
+Db1s = [1e-8]
+Ratio = 1:.1:12;
+ell = 0.70:.01:1.30;
+Rhos = [1.0, 1.5, 2.0, 2.5];
+intensities = [300 , 300, 300, 300].*1e3;
+inttime = 10;
+mua1=0.125; mus1=8; %top layer
+mua2= 0.125; mus2= 8;   %bottom layer
+meanBeta = .5;
+
+tau = DelayTime(taurange);
+numDetectors = size(Rhos,2);
+Rep = 1;
+Betas = 1;
+taustmp = tau;
+T = T(taurange);
+g1s = zeros(numDetectors, size(taustmp,2));
+g2s = g1s;  g2s_noise = g1s;
+sigmas = zeros(numDetectors, size(tau,2));
+siz = size(Db1s,2)*size(Ratio,2)*size(ell,2)*Rep*Betas;
+input = zeros(siz,size(tau,2)*numDetectors);
+target = zeros(siz,3);
+inputshuffle = input;   %inputnn =  input;
+targetshuffle = target;
+load gauss_lag_5000.mat
+j = 0;
+
+
+
+repnumber = 0;
+for db1 = Db1s*1e-2
+    repnumber = repnumber+1;
+    disp(repnumber)
+    tic
+    for ratio = Ratio
+        for l = ell
+            for rep = 1:Rep
+                db2 = db1*ratio;
+                %db2 = db1*10^ratio;
+                %curmua1 = mua1.*(randn*.01+1); curmus1 = mus1.*(randn*.01+1);
+                %curmua2 = mua2.*(randn*.02+1);  curmus2 = mus2.*(randn*.02+1);
+                curmua1 = mua1; curmus1 = mus1;
+                curmua2 = mua2; curmus2 = mus2;
+                %tau = DelayTime(1:120);
+                [g1s, gamma] = getG1(n,Reff,curmua1,curmus1,db1,tau,lambda,Rhos',w,l,curmua2,curmus2,db2,gl);
+                g1s = squeeze(g1s)';
+                for beta = 1:Betas,    j = j + 1;
+                    %betaRand = meanBeta.*(randn(1).*meanbetastdfit.*2+1);
+                    betaRand = meanBeta;
+                    sigmas = getDCSNoise(intensities,T,inttime,betaRand,gamma,tau);
+                    noises = sigmas.*randn(numDetectors, size(tau,2));
+                    %betasRand = repmat(betaRand',1,size(tau,2));
+                    g2s = betaRand'.*g1s.^2 + 1;
+                    g2s_noise = g2s + noises.*noiseToggle;
+                    input(j,:) = (g2s_noise(:)');
+                    %inputnn(j,:) = (g2s(:)');
+                    target(j,:) = ([db1*1e8 db2*1e9 l]);
+                end
+            end
+        end
+    end
+    toc
+end
+
+inputtarget = ([input target]);
+inputtarget = (inputtarget(randperm(size(inputtarget,1)),:));
+inputshuffle = (inputtarget(:, 1:size(inputtarget,2)-3));
+targetshuffle = inputtarget(:, size(input,2) + 2:size(input,2) + 3);
+targetshuffledb1 = inputtarget(:, size(input,2) + 1);
+targetshuffledb2 = (inputtarget(:, size(input,2) + 2));
+targetshuffleell = inputtarget(:, size(input,2) + 3);
+Nets = [];
+netArch = {[10]};
+[trainInd,valInd,testInd] = dividerand(size(inputshuffle, 1));
+
+for retrainingIteration = 1:size(netArch,2)
+    architecture = netArch{retrainingIteration};
+    net = fitnet(architecture, 'trainscg');
+    net.divideFcn = 'divideind';
+    net.divideParam.trainInd = trainInd;
+    net.divideParam.valInd = valInd;
+    net.divideParam.testInd = testInd;
+    net.trainParam.max_fail = 6;
+    net.trainParam.epochs=10000;
+    net.performFcn= 'mae';
+    customweights = 100./(targetshuffledb2');
+    [net1, tr] = train(net, inputshuffle', targetshuffledb2',{}, {}, customweights, 'useGPU', 'no');
+    
+    testTarget = targetshuffledb2(tr.testInd);
+    testFit = net1(inputshuffle(tr.testInd,:)');
+    
+    performance = mean(abs(testTarget - testFit')./testTarget)*100;
+    archString = sprintf('%.0f,' , architecture);
+    archString = archString(1:end - 1);
+    disp(['The performance with hidden layer(s) of [' , archString, '] is an mpe of ', num2str(performance)]);
+    Nets = [Nets performance];
+end
+%contains your g2 curves, ordered such that c1|c2|c3|C4|c5|c1|c2|c3|c4|c5..
+%the next value in the testset array corresponds to the next curve until it
+%reaches 5, then goes to the next tau and gets the g2 value for curve 1
+testg2 = inputshuffle(testInd,:);
+%contains the label of the data, the first index is db2*1e9 cm2/s,
+%second index is thickness
+testlabel = targetshuffle(testInd,:);
+testratio = targetshuffle(testInd,1)*10;
+testthiccness = targetshuffle(testInd,2)*1;
+db2estimate = net1(testset')';
+testError = 100*(testTarget-db2estimate)./testTarget;
+%filter ell between 1.2 and .8
+%filter ratio between 2 and 10
+j = 0
+newTarget = [];
+newthiccness = [];
+newError = [];
+for i = 1:size(testset,2)
+    idx = testInd(i);
+    if ((targetshuffle(idx,1)*10<10) & (targetshuffle(idx,1)*10>2) &...
+            (targetshuffle(idx,2)<1.2) & (targetshuffle(idx,2)>.8))
+        j = j + 1;
+        newthiccness(j) = targetshuffleell(idx);
+        db2estimate = net1(inputshuffle(idx,:)')';
+        newTarget(j) = targetshuffledb2(idx);
+        newError(j) = 100*(newTarget(j) - db2estimate)./newTarget(j);
+    end
+end
+nnfitperformanceplotterfunc(newthiccness, newTarget*10, newError)
+colorbar

@@ -2,13 +2,13 @@
 addpath('..\..\functions');
 addpath('..\..\multilayer');
 
-taurange = 5:95;
+taurange = 5:85;
 constants
-Db1s = [.93*1e-8:.01*1e-8:1e-8]
+Db1s = [1e-8]
 constants
 tau = DelayTime(taurange);
-Ratio = 2:.1:10;
-ell = 0.60:.01:1.20;
+Ratio = 1:.1:12;
+ell = 0.70:.01:1.40;
 Rhos = [1.0, 1.5, 2.0, 2.5];
 numDetectors = size(Rhos,2);
 Rep = 1;
@@ -54,12 +54,12 @@ for db1 = Db1s*1e-2
                 for beta = 1:Betas,    j = j + 1;
                     %betaRand = meanBeta.*(randn(1).*meanbetastdfit.*2+1);
                     betaRand = meanBeta;
-                    intensities = [300 ,200, 50, 30].*1e3;
+                    intensities = [300 , 300, 300, 300].*1e3;
                     sigmas = getDCSNoise(intensities,T,inttime,betaRand,gamma,tau);
                     noises = sigmas.*randn(numDetectors, size(tau,2));
                     %betasRand = repmat(betaRand',1,size(tau,2));
                     g2s = betaRand'.*g1s.^2 + 1;
-                    g2s_noise = g2s + noises;
+                    g2s_noise = g2s + noises.*0;
                     input(j,:) = (g2s_noise(:)');
                     %inputnn(j,:) = (g2s(:)');
                     target(j,:) = ([db1*1e8 db2*1e9 l]);
@@ -88,7 +88,7 @@ for retrainingIteration = 1:size(netArch,2)
     net.divideParam.trainInd = trainInd;
     net.divideParam.valInd = valInd;
     net.divideParam.testInd = testInd;
-    net.trainParam.max_fail = 1000;
+    net.trainParam.max_fail = 6;
     net.trainParam.epochs=10000;
     net.performFcn= 'mae';
     customweights = 100./(targetshuffledb2');
@@ -110,6 +110,25 @@ testset = inputshuffle(testInd,:);
 %contains the label of the data, the first index is db2*1e9 cm2/s,
 %second index is thickness
 testlabel = targetshuffle(testInd,:);
-
 testratio = targetshuffle(testInd,1)*10;
 testthiccness = targetshuffle(testInd,2)*1;
+db2estimate = net1(testset')';
+testError = 100*(testTarget-db2estimate)./testTarget;
+%filter ell between 1.2 and .8
+%filter ratio between 2 and 10
+j = 0
+newTarget = [];
+newthiccness = [];
+newError = [];
+for i = 1:size(testset,2)
+    idx = testInd(i);
+    if ((targetshuffle(idx,1)*10<10) & (targetshuffle(idx,1)*10>2) &...
+            (targetshuffle(idx,2)<1.2) & (targetshuffle(idx,2)>.8))
+        j = j + 1;
+        newthiccness(j) = targetshuffleell(idx);
+        db2estimate = net1(inputshuffle(idx,:)')';
+        newTarget(j) = targetshuffledb2(idx);
+        newError(j) = 100*(newTarget(j) - db2estimate)./newTarget(j);
+    end
+end
+nnfitperformanceplotterfunc(newthiccness, newTarget*10, newError)

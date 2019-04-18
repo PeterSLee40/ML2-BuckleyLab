@@ -11,22 +11,25 @@ load gauss_lag_5000.mat
 %load the MC data and save it into trial
 Dbfit_M_thinned_10_25_multiplenets
 
-taurange = 5:1:85;
-db1prediction = 8.9e-9;
+taurange = 1:70;
+db1prediction = 8.8e-9;
 db2prediction = 10.027e-08;
-Db1s = [.80*db1prediction: .005*db1prediction: 1.05*db1prediction];
+Db1s = [.80*db1prediction: .01*db1prediction: 1.0*db1prediction];
 tau = DelayTime(taurange);
-Ratio = 1.5:.05:12;
-ell = .8: .02 : 1.2;
+Ratio = 1.5:.1:12;
+ell = .8: .01 : 1.2;
 %Layer 1(Skull/Scalp): mu_a : 0.19 cm-1 mu_sp: 8.58 cm-1
 mua1 = 0.19; mus1 = 8.58;
 %Layer 2(Brain): mu_a:0.2 cm-1  mu_sp:  9.9 cm-1
 mua2= 0.2; mus2= 9.9;
 n = 1.37;
 lambda = 852;%wavelength in mm
-Reff= .4930;
-Rhos = [1.0, 1.5, 2.0, 2.5, 3.0];
-intensities = [30 ,30, 30, 30, 30].*1e3;
+
+n0=1.37;%index of refraction for tissue
+Reff=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
+
+Rhos = [1.0, 1.5, 2.0, 2.5];
+intensities = [30 ,30, 30, 30].*1e3;
 
 Rep = 1;    Betas = 1;
 T = T(taurange);
@@ -57,7 +60,7 @@ for db1 = Db1s
             g1s = squeeze(g1s)';
             for beta = 1:Betas,    j = j + 1;
                 %betaRand = meanBeta.*(randn(1).*meanbetastdfit.*2+1);
-                b = meanBeta;
+                betaRand = meanBeta;
                 sigmas = getDCSNoise(intensities,T,inttime,betaRand,gamma,tau);
                 noises = sigmas.*randn(numDetectors, size(tau,2));
                 %betasRand = repmat(betaRand',1,size(tau,2));
@@ -93,17 +96,17 @@ for retrainingIteration = 1:size(netArch,2)
     net = fitnet(architecture, 'trainscg');
     %net.divideFcn = 'divideind';%net.divideParam.trainInd = trainInd;
     %net.divideParam.valInd = valInd;%net.divideParam.testInd = testInd;
-    net.trainParam.max_fail = 2;
-    net.trainParam.epochs=10000;
+    net.trainParam.max_fail = 1;
+    net.trainParam.epochs=1000;
     net.performFcn= 'mse';
     customweights = 100./(targetshuffledb2');
     [net1, tr] = train(net, inputshuffle', targetshuffledb2'./targetshuffledb1',{}, {}, customweights, 'useGPU', 'yes');
-    %[net1, tr] = train(net, inputshuffle', targetshuffledb2', 'useGPU', 'yes');
+    %[net1, tr] = train(net, inputshuffle', targetshuffledb1', 'useGPU', 'yes');
     testTarget = targetshuffledb2(tr.testInd);
     testFit = net1(inputshuffle(tr.testInd,:)');
     performance = mean(abs(testTarget - testFit')./testTarget)*100;
     %archString = sprintf('%.0f,' , architecture);
-    disp(['The performance with hidden layer(s) of [' , archString, '] is an mpe of ', num2str(performance)]);
+    %disp(['The performance with hidden layer(s) of [' , archString, '] is an mpe of ', num2str(performance)]);
     Nets{retrainingIteration} = net1;
     perf(retrainingIteration) = performance;
 end
@@ -117,7 +120,7 @@ testthiccness = targetshuffle(testInd,2)*1;
 db2estimate = net1(testset')';
 testError = 100*(testTarget-db2estimate)./testTarget;
 %Creates a plot
-nnfitperformanceplotterfunc(testthiccness, testTarget, testError)
+%nnfitperformanceplotterfunc(testthiccness, testTarget, testError)
 for k = 1:size(Nets,2)
-   neuralnettrail(k,:) = Nets{k}(trial');
+   neuralnettrail(k,:) = Nets{k}(trial')
 end

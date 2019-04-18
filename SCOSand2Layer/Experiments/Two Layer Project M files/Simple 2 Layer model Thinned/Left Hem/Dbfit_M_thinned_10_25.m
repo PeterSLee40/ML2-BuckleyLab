@@ -6,6 +6,7 @@ load gauss_lag_5000.mat
 load net1_10_25_30khz.mat
 load net1_10_25_100khz.mat
 
+%3-12
 
 plotfits=1;%If you want to display how well your fit compares to your raw g2 data
 plotfigs=1;

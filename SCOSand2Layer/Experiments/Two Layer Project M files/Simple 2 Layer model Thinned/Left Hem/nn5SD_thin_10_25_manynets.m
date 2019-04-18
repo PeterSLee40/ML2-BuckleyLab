@@ -114,12 +114,12 @@ end
 %contains your g2 curves, ordered such that c1|c2|c3|C4|c5|c1|c2|c3|c4|c5..
 %the next value in the testset array corresponds to the next curve until it
 %reaches 5, then goes to the next tau and gets the g2 value for curve 1
-testset = inputshuffle(testInd,:);
+testset = inputshuffle(tr.testInd,:);
 %contains the label of the data, the first index is db2*1e9 cm2/s,
 %second index is thickness
-testlabel = targetshuffle(testInd,:);
-testratio = targetshuffle(testInd,1);
-testthiccness = targetshuffle(testInd,2)*1;
+testlabel = targetshuffle(tr.testInd,:);
+testratio = targetshuffle(tr.testInd,1);
+testthiccness = targetshuffle(tr.testInd,2)*1;
 
 db2estimate = net1(testset')';
 testError = 100*(testTarget-db2estimate)./testTarget;

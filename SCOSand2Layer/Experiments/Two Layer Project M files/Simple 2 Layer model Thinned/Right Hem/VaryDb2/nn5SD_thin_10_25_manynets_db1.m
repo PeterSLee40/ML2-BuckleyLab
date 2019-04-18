@@ -11,13 +11,13 @@ load gauss_lag_5000.mat
 %load the MC data and save it into trial
 Dbfit_M_thinned_10_25_multiplenets
 
-taurange = 5:1:85;
+taurange = 1:70;
 db1prediction = 8.9e-9;
 db2prediction = 10.027e-08;
-Db1s = [.80*db1prediction: .01*db1prediction: 1.05*db1prediction];
+Db1s = [.75*db1prediction: .01*db1prediction: 1*db1prediction];
 tau = DelayTime(taurange);
-Ratio = 1.5:.1:12;
-ell = .6: .02 : 1.2;
+Ratio = 1.5:.05:12;
+ell = .8: .05 : 1.2;
 %Layer 1(Skull/Scalp): mu_a : 0.19 cm-1 mu_sp: 8.58 cm-1
 mua1 = 0.19; mus1 = 8.58;
 %Layer 2(Brain): mu_a:0.2 cm-1  mu_sp:  9.9 cm-1
@@ -25,8 +25,11 @@ mua2= 0.2; mus2= 9.9;
 n = 1.37;
 lambda = 852;%wavelength in mm
 Reff= .4930;
-Rhos = [1.0, 1.5, 2.0, 2.5];
-intensities = [30 ,30, 30, 30].*1e3;
+Rhos = [1.0];
+intensities = [30].*1e3;
+
+n0=1.37;%index of refraction for tissue
+Reff=-1.440./n0^2+0.710/n0+0.668+0.0636.*n0;
 
 Rep = 1;    Betas = 1;
 T = T(taurange);
@@ -57,13 +60,13 @@ for db1 = Db1s
             g1s = squeeze(g1s)';
             for beta = 1:Betas,    j = j + 1;
                 %betaRand = meanBeta.*(randn(1).*meanbetastdfit.*2+1);
-                b = meanBeta;
+                betaRand = meanBeta;
                 sigmas = getDCSNoise(intensities,T,inttime,betaRand,gamma,tau);
-                noises = sigmas.*randn(numDetectors, size(tau,2));
+                noises = sigmas.*randn( numDetectors, size(tau,2));
                 %betasRand = repmat(betaRand',1,size(tau,2));
                 g2s = betaRand'.*g1s.^2 + 1;
-                g2s_noise = g2s + noises.*1;
-                input(j,:) = (g2s_noise(:)'); %inputnn(j,:) = (g2s(:)');
+                g2s_noise = g2s' + noises.*1;
+                input(j,:) = (g2s_noise(:)); %inputnn(j,:) = (g2s(:)');
                 target(j,:) = ([db1*1e8 db2*1e8 l]);
             end
         end
@@ -89,21 +92,28 @@ netArch = {3, 5, 10, 10, [10, 5]};
 
 %this section creates and trains a neural network with matlabs NN toolbox
 for retrainingIteration = 1:size(netArch,2)
+    %defines the network architecture (how many nodes)
     architecture = netArch{retrainingIteration};
     net = fitnet(architecture, 'trainscg');
     %net.divideFcn = 'divideind';%net.divideParam.trainInd = trainInd;
     %net.divideParam.valInd = valInd;%net.divideParam.testInd = testInd;
-    net.trainParam.max_fail = 2;
+    net.trainParam.max_fail = 1;
     net.trainParam.epochs=10000;
     net.performFcn= 'mse';
-    customweights = 100./(targetshuffledb2');
-    [net1, tr] = train(net, inputshuffle', targetshuffledb2'./targetshuffledb1',{}, {}, customweights, 'useGPU', 'yes');
-    %[net1, tr] = train(net, inputshuffle', targetshuffledb2', 'useGPU', 'yes');
+    
+    %%enable these two lines to train with MPE (Mean Percentage Error)
+    
+    %customweights = 100./(targetshuffledb2');
+    %[net1, tr] = train(net, inputshuffle', targetshuffledb2'./targetshuffledb1',{}, {}, customweights, 'useGPU', 'yes');
+    
+    %Where the actual training happens below \/
+    [net1, tr] = train(net, inputshuffle', targetshuffledb1', 'useGPU', 'yes');
+    
     testTarget = targetshuffledb2(tr.testInd);
     testFit = net1(inputshuffle(tr.testInd,:)');
     performance = mean(abs(testTarget - testFit')./testTarget)*100;
     %archString = sprintf('%.0f,' , architecture);
-    disp(['The performance with hidden layer(s) of [' , archString, '] is an mpe of ', num2str(performance)]);
+    %disp(['The performance with hidden layer(s) of [' , archString, '] is an mpe of ', num2str(performance)]);
     Nets{retrainingIteration} = net1;
     perf(retrainingIteration) = performance;
 end
@@ -116,8 +126,9 @@ testthiccness = targetshuffle(testInd,2)*1;
 %feeds in a linearized version of the g2 curves into a neural network.
 db2estimate = net1(testset')';
 testError = 100*(testTarget-db2estimate)./testTarget;
-%Creates a plot
-nnfitperformanceplotterfunc(testthiccness, testTarget, testError)
+
+%Creates a 2-d plot
+%nnfitperformanceplotterfunc(testthiccness, testTarget, testError)
 for k = 1:size(Nets,2)
-   neuralnettrail(k,:) = Nets{k}(trial(:, 1:size(Rhos,2))');
+   neuralnettrail(k,:) = Nets{k}(trail10(:,1:4:size(trial,2)))
 end

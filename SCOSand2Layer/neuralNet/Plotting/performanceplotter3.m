@@ -12,7 +12,7 @@ ratiorand = randn(1)/1e3;
 
 beta = .525 + betarand; 
 Ratio = .3: .1 + ratiorand:1.0;
-ell = .81:.05+ellrand :1.1;
+ell = .81:.05+ellrand :1.2;
 [X Y] = meshgrid(Ratio, ell);
 
 Zdb1 = 0; Zl = 0; Zdb2 = 0;

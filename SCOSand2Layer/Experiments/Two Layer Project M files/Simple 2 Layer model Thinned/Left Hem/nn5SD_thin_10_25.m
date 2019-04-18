@@ -7,10 +7,10 @@ constants
 taurange = 1:1:80;
 db1prediction = 1.125e-08;
 db2prediction = 10.027e-08;
-Db1s = [.96*db1prediction: .005*db1prediction: 1.01*db1prediction];
+Db1s = [.90*db1prediction: .005*db1prediction: 1.01*db1prediction];
 tau = DelayTime(taurange);
 Ratio = 1:.025:12;
-ell = .6: .02 : 1.2;
+ell = .7: .02 : 1.5;
 
 %Layer 1(Skull/Scalp): mu_a : 0.19 cm-1 mu_sp: 8.58 cm-1
 mua1 = 0.19; mus1 = 8.58;
