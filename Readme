@@ -1,1 +1,5 @@
 This is the code written for the a Multilayer Machine Learning Project.
+
+The code is written in MATLAB and Python, The purpose is to fit a traditionally regression-based cost minimization algorithms 
+with Artificial Neural Networks. The technique is still being validated relative to Monte Carlo simulations however the preliminary
+results are promising.
